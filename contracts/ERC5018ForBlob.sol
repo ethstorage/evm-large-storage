@@ -18,18 +18,22 @@ interface EthStorageContract {
 
     function hash(bytes32 key) external view returns (bytes24);
 
+    function size(bytes32 key) external view returns (uint256);
+
     function upfrontPayment() external view returns (uint256);
 }
 
 contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
 
-    uint32 BLOB_SIZE = 4096 * 32;
-    uint32 DECODE_BLOB_SIZE = 4096 * 31;
-
+    uint32 immutable public decodeBlobSize;
     EthStorageContract public storageContract;
 
+    constructor(uint32 fileSize, address storageAddress) {
+        decodeBlobSize = fileSize;
+        storageContract = EthStorageContract(storageAddress);
+    }
+
     mapping(bytes32 => bytes32[]) internal keyToChunk;
-    mapping(bytes32 => uint256) internal chunkSizes;
 
     function setEthStorageContract(address storageAddress) public onlyOwner {
         storageContract = EthStorageContract(storageAddress);
@@ -43,8 +47,8 @@ contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
         if (chunkId >= _countChunks(key)) {
             return (0, false);
         }
-        bytes32 chunkKey = keyToChunk[key][chunkId];
-        return (chunkSizes[chunkKey], true);
+        uint256 length = storageContract.size(keyToChunk[key][chunkId]);
+        return (length, true);
     }
 
     function _size(bytes32 key) internal view returns (uint256, uint256) {
@@ -82,7 +86,7 @@ contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
         uint256 offset = 0;
         for (uint256 chunkId = 0; chunkId < chunkNum; chunkId++) {
             bytes32 chunkKey = keyToChunk[key][chunkId];
-            uint256 length = chunkSizes[chunkKey];
+            uint256 length = storageContract.size(chunkKey);
             storageContract.get(chunkKey, DecodeType.PaddingPer31Bytes, 0, length);
 
             assembly {
@@ -134,11 +138,11 @@ contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
         require(msg.value >= cost * length, "insufficient balance");
 
         for (uint8 i = 0; i < length; i++) {
-            require(sizes[i] <= DECODE_BLOB_SIZE, "invalid chunk length");
+            require(sizes[i] <= decodeBlobSize, "invalid chunk length");
             _preparePut(key, chunkIds[i]);
 
             bytes32 chunkKey = keccak256(abi.encode(msg.sender, block.timestamp, chunkIds[i], i));
-            storageContract.putBlob{value : cost}(chunkKey, i, BLOB_SIZE);
+            storageContract.putBlob{value : cost}(chunkKey, i, sizes[i]);
             if (chunkIds[i] < _countChunks(key)) {
                 // replace
                 keyToChunk[key][chunkIds[i]] = chunkKey;
@@ -146,7 +150,6 @@ contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
                 // add
                 keyToChunk[key].push(chunkKey);
             }
-            chunkSizes[chunkKey] = sizes[i];
         }
     }
 

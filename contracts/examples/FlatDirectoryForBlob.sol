@@ -7,6 +7,8 @@ import "../ERC5018ForBlob.sol";
 contract FlatDirectoryForBlob is ERC5018ForBlob {
     bytes public defaultFile = "";
 
+    constructor(uint32 size, address storageAddress) ERC5018ForBlob(size, storageAddress) {}
+
     function resolveMode() external pure virtual returns (bytes32) {
         return "manual";
     }
@@ -30,6 +32,8 @@ contract FlatDirectoryForBlob is ERC5018ForBlob {
         returnBytesInplace(content);
     }
 
+    // The returnBytesInplace function of StorageHelper is used and only used, so it is extracted separately from StorageHelper.
+    // StorageHelper.returnBytesInplace(content);
     function returnBytesInplace(bytes memory content) internal pure {
         // equal to return abi.encode(content)
         uint256 size = content.length + 0x40; // pointer + size
