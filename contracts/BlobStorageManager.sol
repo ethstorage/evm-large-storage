@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./IERC5018ForBlob.sol";
 
 enum DecodeType {
     RawData,
@@ -23,39 +22,46 @@ interface EthStorageContract {
     function upfrontPayment() external view returns (uint256);
 }
 
-contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
+contract BlobStorageManager is Ownable {
 
     uint32 immutable public decodeBlobSize;
     EthStorageContract public storageContract;
+    mapping(bytes32 => bytes32[]) internal keyToChunk;
 
     constructor(uint32 fileSize, address storageAddress) {
         decodeBlobSize = fileSize;
         storageContract = EthStorageContract(storageAddress);
     }
 
-    mapping(bytes32 => bytes32[]) internal keyToChunk;
-
     function setEthStorageContract(address storageAddress) public onlyOwner {
         storageContract = EthStorageContract(storageAddress);
     }
 
-    function _countChunks(bytes32 key) internal view returns (uint256) {
+    function isSupportBlob() view public returns(bool) {
+        return address(storageContract) != address(0);
+    }
+
+    function upfrontPayment() external view returns (uint256) {
+        return storageContract.upfrontPayment();
+    }
+
+    function _countChunksFromBlob(bytes32 key) internal view returns (uint256) {
         return keyToChunk[key].length;
     }
 
-    function _chunkSize(bytes32 key, uint256 chunkId) internal view returns (uint256, bool) {
-        if (chunkId >= _countChunks(key)) {
+    function _chunkSizeFromBlob(bytes32 key, uint256 chunkId) internal view returns (uint256, bool) {
+        if (chunkId >= _countChunksFromBlob(key)) {
             return (0, false);
         }
         uint256 length = storageContract.size(keyToChunk[key][chunkId]);
         return (length, true);
     }
 
-    function _size(bytes32 key) internal view returns (uint256, uint256) {
+    function _sizeFromBlob(bytes32 key) internal view returns (uint256, uint256) {
         uint256 size_ = 0;
         uint256 chunkId_ = 0;
         while (true) {
-            (uint256 chunkSize_, bool found) = _chunkSize(key, chunkId_);
+            (uint256 chunkSize_, bool found) = _chunkSizeFromBlob(key, chunkId_);
             if (!found) {
                 break;
             }
@@ -66,8 +72,8 @@ contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
         return (size_, chunkId_);
     }
 
-    function _getChunk(bytes32 key, uint256 chunkId) internal view returns (bytes memory, bool) {
-        (uint256 length,) = _chunkSize(key, chunkId);
+    function _getChunkFromBlob(bytes32 key, uint256 chunkId) internal view returns (bytes memory, bool) {
+        (uint256 length,) = _chunkSizeFromBlob(key, chunkId);
         if (length < 1) {
             return (new bytes(0), false);
         }
@@ -76,8 +82,8 @@ contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
         return (data, true);
     }
 
-    function _get(bytes32 key) internal view returns (bytes memory, bool) {
-        (uint256 fileSize, uint256 chunkNum) = _size(key);
+    function _getFromBlob(bytes32 key) internal view returns (bytes memory, bool) {
+        (uint256 fileSize, uint256 chunkNum) = _sizeFromBlob(key);
         if (chunkNum == 0) {
             return (new bytes(0), false);
         }
@@ -98,17 +104,17 @@ contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
         return (concatenatedData, true);
     }
 
-    function _removeChunk(bytes32 key, uint256 chunkId) internal returns (bool) {
-        require(_countChunks(key) - 1 == chunkId, "only the last chunk can be removed");
+    function _removeChunkFromBlob(bytes32 key, uint256 chunkId) internal returns (bool) {
+        require(_countChunksFromBlob(key) - 1 == chunkId, "only the last chunk can be removed");
         storageContract.remove(keyToChunk[key][chunkId]);
         keyToChunk[key].pop();
         return true;
     }
 
-    function _remove(bytes32 key, uint256 chunkId) internal returns (uint256) {
-        require(_countChunks(key) > 0, "the file has no content");
+    function _removeFromBlob(bytes32 key, uint256 chunkId) internal returns (uint256) {
+        require(_countChunksFromBlob(key) > 0, "the file has no content");
 
-        for (uint256 i = _countChunks(key) - 1; i >= chunkId;) {
+        for (uint256 i = _countChunksFromBlob(key) - 1; i >= chunkId;) {
             storageContract.remove(keyToChunk[key][chunkId]);
             keyToChunk[key].pop();
             if (i == 0) {
@@ -120,9 +126,9 @@ contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
         return chunkId;
     }
 
-    function _preparePut(bytes32 key, uint256 chunkId) private {
-        require(chunkId <= _countChunks(key), "must replace or append");
-        if (chunkId < _countChunks(key)) {
+    function _preparePutFromBlob(bytes32 key, uint256 chunkId) private {
+        require(chunkId <= _countChunksFromBlob(key), "must replace or append");
+        if (chunkId < _countChunksFromBlob(key)) {
             // replace, delete old blob
             storageContract.remove(keyToChunk[key][chunkId]);
         }
@@ -139,11 +145,11 @@ contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
 
         for (uint8 i = 0; i < length; i++) {
             require(sizes[i] <= decodeBlobSize, "invalid chunk length");
-            _preparePut(key, chunkIds[i]);
+            _preparePutFromBlob(key, chunkIds[i]);
 
             bytes32 chunkKey = keccak256(abi.encode(msg.sender, block.timestamp, chunkIds[i], i));
             storageContract.putBlob{value : cost}(chunkKey, i, sizes[i]);
-            if (chunkIds[i] < _countChunks(key)) {
+            if (chunkIds[i] < _countChunksFromBlob(key)) {
                 // replace
                 keyToChunk[key][chunkIds[i]] = chunkKey;
             } else {
@@ -153,64 +159,11 @@ contract ERC5018ForBlob is IERC5018ForBlob, Ownable {
         }
     }
 
-
-
-    // interface methods
-    function read(bytes memory name) public view override returns (bytes memory, bool) {
-        return _get(keccak256(name));
-    }
-
-    function size(bytes memory name) public view override returns (uint256, uint256) {
-        return _size(keccak256(name));
-    }
-
-    function remove(bytes memory name) public onlyOwner override returns (uint256) {
-        return _remove(keccak256(name), 0);
-    }
-
-    function countChunks(bytes memory name) public view override returns (uint256) {
-        return _countChunks(keccak256(name));
-    }
-
-    function readChunk(bytes memory name, uint256 chunkId) public view override returns (bytes memory, bool) {
-        return _getChunk(keccak256(name), chunkId);
-    }
-
-    function chunkSize(bytes memory name, uint256 chunkId) public view override returns (uint256, bool) {
-        return _chunkSize(keccak256(name), chunkId);
-    }
-
-    function removeChunk(bytes memory name, uint256 chunkId) public onlyOwner override returns (bool) {
-        return _removeChunk(keccak256(name), chunkId);
-    }
-
-    function truncate(bytes memory name, uint256 chunkId) public onlyOwner override returns (uint256) {
-        return _remove(keccak256(name), chunkId);
-    }
-
-    function refund() public onlyOwner override {
-        payable(owner()).transfer(address(this).balance);
-    }
-
-    function destruct() public onlyOwner override {
-        selfdestruct(payable(owner()));
-    }
-
-    function getChunkHash(bytes memory name, uint256 chunkId) public view returns (bytes32) {
-        bytes32 key = keccak256(name);
-        if (chunkId >= _countChunks(key)) {
+    function _getChunkHashFromBlob(bytes32 key, uint256 chunkId) public view returns (bytes32) {
+        if (chunkId >= _countChunksFromBlob(key)) {
             return bytes32(0);
         }
         return storageContract.hash(keyToChunk[key][chunkId]);
     }
-
-    // Chunk-based large storage methods
-    function writeChunk(bytes memory name, uint256[] memory chunkIds, uint256[] memory sizes) public onlyOwner override payable {
-        _putChunks(keccak256(name), chunkIds, sizes);
-        refund();
-    }
-
-    function upfrontPayment() external view returns (uint256) {
-        return storageContract.upfrontPayment();
-    }
 }
+

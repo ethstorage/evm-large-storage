@@ -7,7 +7,11 @@ import "../ERC5018.sol";
 contract FlatDirectory is ERC5018 {
     bytes public defaultFile = "";
 
-    constructor(uint8 slotLimit) ERC5018(slotLimit) {}
+    constructor(
+        uint8 slotLimit,
+        uint32 fileSize,
+        address storageAddress
+    ) ERC5018(slotLimit, fileSize, storageAddress) {}
 
     function resolveMode() external pure virtual returns (bytes32) {
         return "manual";
@@ -32,8 +36,7 @@ contract FlatDirectory is ERC5018 {
         StorageHelper.returnBytesInplace(content);
     }
 
-    function setDefault(bytes memory _defaultFile) public virtual {
-        require(msg.sender == owner, "must from owner");
+    function setDefault(bytes memory _defaultFile) public onlyOwner virtual {
         defaultFile = _defaultFile;
     }
 }

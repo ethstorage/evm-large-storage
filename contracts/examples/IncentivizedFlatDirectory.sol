@@ -9,16 +9,16 @@ contract IncentivizedFlatDirectory is FlatDirectory {
     uint256 public constant PER_CHUNK_SIZE = 24 * 1024;
     uint256 public constant CODE_STAKING_PER_CHUNK = 10**18;
 
-    constructor(uint8 _slotLimit) payable FlatDirectory(_slotLimit) {}
+    constructor(uint8 _slotLimit) payable FlatDirectory(_slotLimit, 0, address(0)) {}
 
     modifier onlyOperatorOrOwner() {
-        require(operator == msg.sender || owner == msg.sender, "must from owner or operator");
+        require(operator == msg.sender || owner() == msg.sender, "must from owner or operator");
         _;
     }
 
     receive() external payable {
         if (msg.value > 0) {
-            require(msg.sender == owner, "only owner transfer token into contract");
+            require(msg.sender == owner(), "only owner transfer token into contract");
         }
     }
 
