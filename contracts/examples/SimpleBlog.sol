@@ -25,7 +25,7 @@ contract SimpleBlog is SimpleFlatDirectory {
 
     constructor() SimpleFlatDirectory(0) {
         FlatDirectory flat = new FlatDirectory(0);
-        flat.changeOwner(msg.sender);
+        flat.transferOwnership(msg.sender);
         assets = address(flat);
     }
 

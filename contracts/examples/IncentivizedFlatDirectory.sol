@@ -12,13 +12,13 @@ contract IncentivizedFlatDirectory is FlatDirectory {
     constructor(uint8 _slotLimit) payable FlatDirectory(_slotLimit) {}
 
     modifier onlyOperatorOrOwner() {
-        require(operator == msg.sender || owner == msg.sender, "must from owner or operator");
+        require(operator == msg.sender || owner() == msg.sender, "must from owner or operator");
         _;
     }
 
     receive() external payable {
         if (msg.value > 0) {
-            require(msg.sender == owner, "only owner transfer token into contract");
+            require(msg.sender == owner(), "only owner transfer token into contract");
         }
     }
 

@@ -32,8 +32,7 @@ contract FlatDirectory is ERC5018 {
         StorageHelper.returnBytesInplace(content);
     }
 
-    function setDefault(bytes memory _defaultFile) public virtual {
-        require(msg.sender == owner, "must from owner");
+    function setDefault(bytes memory _defaultFile) public onlyOwner virtual {
         defaultFile = _defaultFile;
     }
 }

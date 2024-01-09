@@ -9,14 +9,14 @@ contract FlatDirectoryFactory {
 
     function create() public returns (address) {
         FlatDirectory fd = new FlatDirectory(0);
-        fd.changeOwner(msg.sender);
+        fd.transferOwnership(msg.sender);
         emit FlatDirectoryCreated(address(fd));
         return address(fd);
     }
 
     function createOptimized() public returns (address) {
         FlatDirectory fd = new FlatDirectory(220);
-        fd.changeOwner(msg.sender);
+        fd.transferOwnership(msg.sender);
         emit FlatDirectoryCreated(address(fd));
         return address(fd);
     }
