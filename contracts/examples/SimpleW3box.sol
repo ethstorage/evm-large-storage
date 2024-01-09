@@ -43,7 +43,7 @@ contract SimpleW3box {
     constructor(string memory _gateway) {
         owner = msg.sender;
         gateway = _gateway;
-        fileFD = new FlatDirectory(0, 0, address(0));
+        fileFD = new FlatDirectory(0);
     }
 
     receive() external payable {

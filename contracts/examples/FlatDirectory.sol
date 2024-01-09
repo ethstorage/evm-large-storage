@@ -7,11 +7,7 @@ import "../ERC5018.sol";
 contract FlatDirectory is ERC5018 {
     bytes public defaultFile = "";
 
-    constructor(
-        uint8 slotLimit,
-        uint32 fileSize,
-        address storageAddress
-    ) ERC5018(slotLimit, fileSize, storageAddress) {}
+    constructor(uint8 slotLimit) ERC5018(slotLimit) {}
 
     function resolveMode() external pure virtual returns (bytes32) {
         return "manual";

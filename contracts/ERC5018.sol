@@ -14,11 +14,7 @@ contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager  {
     }
     mapping(bytes32 => FileMode) fileModes;
 
-    constructor(
-        uint8 slotLimit,
-        uint32 fileSize,
-        address storageAddress
-    ) LargeStorageManager(slotLimit) BlobStorageManager(fileSize, storageAddress){}
+    constructor(uint8 slotLimit) LargeStorageManager(slotLimit) {}
 
     function getFileMode(bytes memory name) public view returns(FileMode) {
         return fileModes[keccak256(name)];
@@ -84,6 +80,8 @@ contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager  {
         uint256[] memory chunkIds,
         uint256[] memory sizes
     ) public onlyOwner override payable {
+        require(isSupportBlob(), "The current network does not support blob upload");
+
         FileMode mode = getFileMode(name);
         require(mode == FileMode.Uninitialized || mode == FileMode.Blob, "Invalid file upload mode");
         if (mode == FileMode.Uninitialized) {

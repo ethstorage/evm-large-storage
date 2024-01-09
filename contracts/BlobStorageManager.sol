@@ -24,11 +24,11 @@ interface EthStorageContract {
 
 contract BlobStorageManager is Ownable {
 
-    uint32 immutable public decodeBlobSize;
+    uint32 public decodeBlobSize;
     EthStorageContract public storageContract;
     mapping(bytes32 => bytes32[]) internal keyToChunk;
 
-    constructor(uint32 fileSize, address storageAddress) {
+    function initBlobParams(uint32 fileSize, address storageAddress) public onlyOwner {
         decodeBlobSize = fileSize;
         storageContract = EthStorageContract(storageAddress);
     }
@@ -37,11 +37,11 @@ contract BlobStorageManager is Ownable {
         storageContract = EthStorageContract(storageAddress);
     }
 
-    function isSupportBlob() view public returns(bool) {
-        return address(storageContract) != address(0);
+    function isSupportBlob() view public returns (bool) {
+        return address(storageContract) != address(0) && upfrontPayment() >= 0;
     }
 
-    function upfrontPayment() external view returns (uint256) {
+    function upfrontPayment() public view returns (uint256) {
         return storageContract.upfrontPayment();
     }
 

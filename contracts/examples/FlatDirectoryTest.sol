@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "./FlatDirectory.sol";
 
 contract FlatDirectoryTest is FlatDirectory {
-    constructor(uint8 slotLimit) FlatDirectory(slotLimit, 0, address(0)) {}
+    constructor(uint8 slotLimit) FlatDirectory(slotLimit) {}
 
     function readNonView(bytes memory name) public returns (bytes memory, bool) {
         return _get(keccak256(name));
