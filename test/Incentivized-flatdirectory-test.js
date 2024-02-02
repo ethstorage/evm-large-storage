@@ -20,10 +20,10 @@ describe("IncentivizedFlatDirectory Test", function () {
     let accs = await ethers.getSigners();
     [owner, operator, user] = accs;
     expect(accs.length).to.above(2, "no enough accounts");
-    factory = await ethers.getContractFactory("IncentivizedFlatDirectory");
+    let factory = await ethers.getContractFactory("IncentivizedFlatDirectory");
     sendedEth = BigNumber.from(4).mul(CodeStakingPerChunk);
     let _nonce = await ethers.provider.getTransactionCount(owner.address);
-    fd = await factory.connect(owner).deploy(220, {
+    fd = await factory.connect(owner).deploy(220, 0, '0x0000000000000000000000000000000000000000', {
       nonce: _nonce,
       value: sendedEth,
       maxPriorityFeePerGas: BigNumber.from(15 * 10 ** 9),

@@ -112,10 +112,8 @@ describe("4844 Blob Storage Test", function () {
         await storage.deployed();
 
         const ERC5018ForBlob = await ethers.getContractFactory("ERC5018");
-        ercBlob = await ERC5018ForBlob.deploy(0);
+        ercBlob = await ERC5018ForBlob.deploy(0, 31 * 4096, storage.address);
         await ercBlob.deployed();
-
-        await ercBlob.initBlobParams(31 * 4096, storage.address);
     });
 
     it("put/get", async function () {

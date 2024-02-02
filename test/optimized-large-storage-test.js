@@ -14,7 +14,7 @@ describe("OptimizedFlatDirectory Test", function () {
   let OPFlatDirectory;
   beforeEach(async () => {
     factory = await ethers.getContractFactory("FlatDirectory");
-    OPFlatDirectory = await factory.deploy(220);
+    OPFlatDirectory = await factory.deploy(220, 0, "0x0000000000000000000000000000000000000000");
     await OPFlatDirectory.deployed();
   });
 

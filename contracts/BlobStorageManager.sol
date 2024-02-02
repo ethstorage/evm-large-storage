@@ -24,17 +24,21 @@ interface EthStorageContract {
 
 contract BlobStorageManager is Ownable {
 
-    uint32 public decodeBlobSize;
+    uint32 public maxChunkSize;
     EthStorageContract public storageContract;
-    mapping(bytes32 => bytes32[]) internal keyToChunk;
+    mapping(bytes32 => mapping(uint256 => bytes32)) internal keyToChunks;
 
-    function initBlobParams(uint32 fileSize, address storageAddress) public onlyOwner {
-        decodeBlobSize = fileSize;
+    constructor(uint32 size, address storageAddress) {
+        maxChunkSize = size;
         storageContract = EthStorageContract(storageAddress);
     }
 
-    function setEthStorageContract(address storageAddress) public onlyOwner {
+    function changeEsContract(address storageAddress) public onlyOwner {
         storageContract = EthStorageContract(storageAddress);
+    }
+
+    function changeMaxChunkSize(uint32 size) public onlyOwner {
+        maxChunkSize = size;
     }
 
     function isSupportBlob() view public returns (bool) {
@@ -46,30 +50,32 @@ contract BlobStorageManager is Ownable {
     }
 
     function _countChunksFromBlob(bytes32 key) internal view returns (uint256) {
-        return keyToChunk[key].length;
+        uint256 chunkId = 0;
+        while (true) {
+            bytes32 chunkKey = keyToChunks[key][chunkId];
+            if (chunkKey == bytes32(0)) {
+                break;
+            }
+            chunkId++;
+        }
+        return chunkId;
     }
 
     function _chunkSizeFromBlob(bytes32 key, uint256 chunkId) internal view returns (uint256, bool) {
         if (chunkId >= _countChunksFromBlob(key)) {
             return (0, false);
         }
-        uint256 length = storageContract.size(keyToChunk[key][chunkId]);
+        uint256 length = storageContract.size(keyToChunks[key][chunkId]);
         return (length, true);
     }
 
     function _sizeFromBlob(bytes32 key) internal view returns (uint256, uint256) {
-        uint256 size_ = 0;
-        uint256 chunkId_ = 0;
-        while (true) {
-            (uint256 chunkSize_, bool found) = _chunkSizeFromBlob(key, chunkId_);
-            if (!found) {
-                break;
-            }
-            size_ += chunkSize_;
-            chunkId_++;
+        uint256 chunkNum = _countChunksFromBlob(key);
+        uint256 size = 0;
+        for (uint256 chunkId = 0; chunkId < chunkNum; chunkId++) {
+            size += storageContract.size(keyToChunks[key][chunkId]);
         }
-
-        return (size_, chunkId_);
+        return (size, chunkNum);
     }
 
     function _getChunkFromBlob(bytes32 key, uint256 chunkId) internal view returns (bytes memory, bool) {
@@ -78,7 +84,7 @@ contract BlobStorageManager is Ownable {
             return (new bytes(0), false);
         }
 
-        bytes memory data = storageContract.get(keyToChunk[key][chunkId], DecodeType.PaddingPer31Bytes, 0, length);
+        bytes memory data = storageContract.get(keyToChunks[key][chunkId], DecodeType.PaddingPer31Bytes, 0, length);
         return (data, true);
     }
 
@@ -91,7 +97,7 @@ contract BlobStorageManager is Ownable {
         bytes memory concatenatedData = new bytes(fileSize);
         uint256 offset = 0;
         for (uint256 chunkId = 0; chunkId < chunkNum; chunkId++) {
-            bytes32 chunkKey = keyToChunk[key][chunkId];
+            bytes32 chunkKey = keyToChunks[key][chunkId];
             uint256 length = storageContract.size(chunkKey);
             storageContract.get(chunkKey, DecodeType.PaddingPer31Bytes, 0, length);
 
@@ -105,32 +111,40 @@ contract BlobStorageManager is Ownable {
     }
 
     function _removeChunkFromBlob(bytes32 key, uint256 chunkId) internal returns (bool) {
-        require(_countChunksFromBlob(key) - 1 == chunkId, "only the last chunk can be removed");
-        storageContract.remove(keyToChunk[key][chunkId]);
-        keyToChunk[key].pop();
+        bytes32 chunkKey = keyToChunks[key][chunkId];
+        if (chunkKey == bytes32(0)) {
+            return false;
+        }
+        if (keyToChunks[key][chunkId + 1] != bytes32(0)) {
+            // only the last chunk can be removed
+            return false;
+        }
+
+        storageContract.remove(keyToChunks[key][chunkId]);
+        keyToChunks[key][chunkId] = bytes32(0);
         return true;
     }
 
     function _removeFromBlob(bytes32 key, uint256 chunkId) internal returns (uint256) {
-        require(_countChunksFromBlob(key) > 0, "the file has no content");
-
-        for (uint256 i = _countChunksFromBlob(key) - 1; i >= chunkId;) {
-            storageContract.remove(keyToChunk[key][chunkId]);
-            keyToChunk[key].pop();
-            if (i == 0) {
+        while (true) {
+            bytes32 chunkKey = keyToChunks[key][chunkId];
+            if (chunkKey == bytes32(0)) {
                 break;
-            } else {
-                i--;
             }
+
+            storageContract.remove(keyToChunks[key][chunkId]);
+            keyToChunks[key][chunkId] = bytes32(0);
+            chunkId++;
         }
         return chunkId;
     }
 
     function _preparePutFromBlob(bytes32 key, uint256 chunkId) private {
-        require(chunkId <= _countChunksFromBlob(key), "must replace or append");
-        if (chunkId < _countChunksFromBlob(key)) {
-            // replace, delete old blob
-            storageContract.remove(keyToChunk[key][chunkId]);
+        bytes32 chunkKey = keyToChunks[key][chunkId];
+        if (chunkKey == bytes32(0)) {
+            require(chunkId == 0 || keyToChunks[key][chunkId - 1] != bytes32(0), "must replace or append");
+        } else {
+            storageContract.remove(keyToChunks[key][chunkId]);
         }
     }
 
@@ -144,18 +158,12 @@ contract BlobStorageManager is Ownable {
         require(msg.value >= cost * length, "insufficient balance");
 
         for (uint8 i = 0; i < length; i++) {
-            require(sizes[i] <= decodeBlobSize, "invalid chunk length");
+            require(0 < sizes[i] && sizes[i] <= maxChunkSize, "invalid chunk length");
             _preparePutFromBlob(key, chunkIds[i]);
 
-            bytes32 chunkKey = keccak256(abi.encode(msg.sender, block.timestamp, chunkIds[i], i));
+            bytes32 chunkKey = keccak256(abi.encode(msg.sender, key, chunkIds[i]));
             storageContract.putBlob{value : cost}(chunkKey, i, sizes[i]);
-            if (chunkIds[i] < _countChunksFromBlob(key)) {
-                // replace
-                keyToChunk[key][chunkIds[i]] = chunkKey;
-            } else {
-                // add
-                keyToChunk[key].push(chunkKey);
-            }
+            keyToChunks[key][chunkIds[i]] = chunkKey;
         }
     }
 
@@ -163,7 +171,6 @@ contract BlobStorageManager is Ownable {
         if (chunkId >= _countChunksFromBlob(key)) {
             return bytes32(0);
         }
-        return storageContract.hash(keyToChunk[key][chunkId]);
+        return storageContract.hash(keyToChunks[key][chunkId]);
     }
 }
-
