@@ -82,7 +82,7 @@ contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager {
         bytes calldata data
     ) public payable onlyOwner virtual override {
         StorageMode mode = getStorageMode(name);
-        require(mode == StorageMode.Uninitialized || mode == StorageMode.OnChain, "Invalid file upload mode");
+        require(mode == StorageMode.Uninitialized || mode == StorageMode.OnChain, "Invalid storage mode");
         if (mode == StorageMode.Uninitialized) {
             setStorageMode(name, StorageMode.OnChain);
         }
@@ -97,7 +97,7 @@ contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager {
         require(isSupportBlob(), "The current network does not support blob upload");
 
         StorageMode mode = getStorageMode(name);
-        require(mode == StorageMode.Uninitialized || mode == StorageMode.Blob, "Invalid file upload mode");
+        require(mode == StorageMode.Uninitialized || mode == StorageMode.Blob, "Invalid storage mode");
         if (mode == StorageMode.Uninitialized) {
             setStorageMode(name, StorageMode.Blob);
         }

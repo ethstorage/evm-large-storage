@@ -37,7 +37,7 @@ contract IncentivizedFlatDirectory is FlatDirectory {
     function write(bytes memory name, bytes calldata data) public payable override onlyOperatorOrOwner {
         require(msg.value == 0, "msg.value must be 0");
         StorageMode mode = getStorageMode(name);
-        require(mode == StorageMode.Uninitialized || mode == StorageMode.OnChain, "Invalid file upload mode");
+        require(mode == StorageMode.Uninitialized || mode == StorageMode.OnChain, "Invalid storage mode");
         if (mode == StorageMode.Uninitialized) {
             setStorageMode(name, StorageMode.OnChain);
         }
@@ -65,7 +65,7 @@ contract IncentivizedFlatDirectory is FlatDirectory {
     ) public payable override onlyOperatorOrOwner {
         require(msg.value == 0, "msg.value must be 0");
         StorageMode mode = getStorageMode(name);
-        require(mode == StorageMode.Uninitialized || mode == StorageMode.OnChain, "Invalid file upload mode");
+        require(mode == StorageMode.Uninitialized || mode == StorageMode.OnChain, "Invalid storage mode");
         if (mode == StorageMode.Uninitialized) {
             setStorageMode(name, StorageMode.OnChain);
         }
