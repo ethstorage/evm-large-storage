@@ -8,7 +8,7 @@ enum DecodeType {
     PaddingPer31Bytes
 }
 
-interface EthStorageContract {
+interface IEthStorageContract {
     function putBlob(bytes32 key, uint256 blobIdx, uint256 length) external payable;
 
     function get(bytes32 key, DecodeType decodeType, uint256 off, uint256 len) external view returns (bytes memory);
@@ -25,19 +25,19 @@ interface EthStorageContract {
 contract BlobStorageManager is Ownable {
 
     uint32 public maxChunkSize;
-    EthStorageContract public storageContract;
+    IEthStorageContract public storageContract;
     mapping(bytes32 => mapping(uint256 => bytes32)) internal keyToChunks;
 
     constructor(uint32 size, address storageAddress) {
         maxChunkSize = size;
-        storageContract = EthStorageContract(storageAddress);
+        storageContract = IEthStorageContract(storageAddress);
     }
 
-    function changeEsContract(address storageAddress) public onlyOwner {
-        storageContract = EthStorageContract(storageAddress);
+    function setStorageContract(address storageAddress) public onlyOwner {
+        storageContract = IEthStorageContract(storageAddress);
     }
 
-    function changeMaxChunkSize(uint32 size) public onlyOwner {
+    function setMaxChunkSize(uint32 size) public onlyOwner {
         maxChunkSize = size;
     }
 
@@ -120,7 +120,8 @@ contract BlobStorageManager is Ownable {
             return false;
         }
 
-        storageContract.remove(keyToChunks[key][chunkId]);
+        // TODO The current version does not support the delete
+        // storageContract.remove(keyToChunks[key][chunkId]);
         keyToChunks[key][chunkId] = bytes32(0);
         return true;
     }
@@ -132,7 +133,8 @@ contract BlobStorageManager is Ownable {
                 break;
             }
 
-            storageContract.remove(keyToChunks[key][chunkId]);
+            // TODO The current version does not support the delete
+            // storageContract.remove(keyToChunks[key][chunkId]);
             keyToChunks[key][chunkId] = bytes32(0);
             chunkId++;
         }
@@ -144,7 +146,8 @@ contract BlobStorageManager is Ownable {
         if (chunkKey == bytes32(0)) {
             require(chunkId == 0 || keyToChunks[key][chunkId - 1] != bytes32(0), "must replace or append");
         } else {
-            storageContract.remove(keyToChunks[key][chunkId]);
+            // TODO The current version does not support the delete
+            // storageContract.remove(keyToChunks[key][chunkId]);
         }
     }
 
