@@ -6,6 +6,11 @@ import "./LargeStorageManager.sol";
 
 contract EthStorageContractTest is LargeStorageManager(0) {
 
+    enum DecodeType {
+        RawData,
+        PaddingPer31Bytes
+    }
+
     event PutBlob(bytes32 key, uint256 blobIdx, uint256 length);
 
     // implement
@@ -22,7 +27,7 @@ contract EthStorageContractTest is LargeStorageManager(0) {
         _remove(key, 0);
     }
 
-    function get(bytes32 key, uint256 off, uint256 len) external view returns (bytes memory data) {
+    function get(bytes32 key, DecodeType decodeType, uint256 off, uint256 len) external view returns (bytes memory data) {
         (data,) = _get(key);
     }
 

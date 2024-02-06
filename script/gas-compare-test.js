@@ -25,10 +25,10 @@ let WriteCode = async function (size) {
 
   let fdFactory = await ethers.getContractFactory("FlatDirectory");
 
-  let opfd = await fdFactory.deploy(220);
+  let opfd = await fdFactory.deploy(220, 0, '0x0000000000000000000000000000000000000000');
   await opfd.deployed();
 
-  let fd = await fdFactory.deploy(0);
+  let fd = await fdFactory.deploy(0, 0, '0x0000000000000000000000000000000000000000');
   await fd.deployed();
 
   let tx1 = await fd.writeChunk("0x01", 0, value);

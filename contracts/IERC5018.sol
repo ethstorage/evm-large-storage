@@ -21,6 +21,8 @@ interface IERC5018 {
         bytes memory data
     ) external payable;
 
+    function writeChunks(bytes memory name, uint256[] memory chunkIds, uint256[] memory sizes) external payable;
+
     function readChunk(bytes memory name, uint256 chunkId) external view returns (bytes memory, bool);
 
     function chunkSize(bytes memory name, uint256 chunkId) external view returns (uint256, bool);

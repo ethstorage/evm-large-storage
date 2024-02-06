@@ -91,7 +91,7 @@ const uploadFile = async function (hexName, file, fileSize, storage, ercBlob) {
 
         const value = cost.mul(chunkIds.length);
         // upload file
-        const result = await ercBlob.writeChunk(hexName, chunkIds, sizes, {value: value});
+        const result = await ercBlob.writeChunks(hexName, chunkIds, sizes, {value: value});
         const receipt = await result.wait(1);
 
         // upload real data
@@ -111,11 +111,9 @@ describe("4844 Blob Storage Test", function () {
         storage = await EthStorageContractTest.deploy();
         await storage.deployed();
 
-        const ERC5018ForBlob = await ethers.getContractFactory("ERC5018ForBlob");
-        ercBlob = await ERC5018ForBlob.deploy();
+        const ERC5018ForBlob = await ethers.getContractFactory("ERC5018");
+        ercBlob = await ERC5018ForBlob.deploy(0, 31 * 4096, storage.address);
         await ercBlob.deployed();
-
-        await ercBlob.setEthStorageContract(storage.address);
     });
 
     it("put/get", async function () {

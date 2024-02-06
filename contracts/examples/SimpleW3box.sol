@@ -43,7 +43,7 @@ contract SimpleW3box {
     constructor(string memory _gateway) {
         owner = msg.sender;
         gateway = _gateway;
-        fileFD = new FlatDirectory(0);
+        fileFD = new FlatDirectory(0, 0, address(0));
     }
 
     receive() external payable {
@@ -104,7 +104,7 @@ contract SimpleW3box {
         return fileFD.countChunks(getNewName(msg.sender, name));
     }
 
-    function getNewName(address author,bytes memory name) public pure returns (bytes memory) {
+    function getNewName(address author, bytes memory name) public pure returns (bytes memory) {
         return abi.encodePacked(
             Strings.toHexString(uint256(uint160(author)), 20),
             '/',
