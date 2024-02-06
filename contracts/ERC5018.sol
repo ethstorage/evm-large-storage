@@ -24,7 +24,7 @@ contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager {
         return storageModes[keccak256(name)];
     }
 
-    function setStorageMode(bytes memory name, StorageMode mode) internal {
+    function _setStorageMode(bytes memory name, StorageMode mode) internal {
         storageModes[keccak256(name)] = mode;
     }
 
@@ -41,8 +41,7 @@ contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager {
         } else if (mode == StorageMode.OnChain) {
             return _get(keccak256(name));
         }
-        bytes memory nil;
-        return (nil, false);
+        return (new bytes(0), false);
     }
 
     function size(bytes memory name) public view virtual override returns (uint256, uint256) {
@@ -84,7 +83,7 @@ contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager {
         StorageMode mode = getStorageMode(name);
         require(mode == StorageMode.Uninitialized || mode == StorageMode.OnChain, "Invalid storage mode");
         if (mode == StorageMode.Uninitialized) {
-            setStorageMode(name, StorageMode.OnChain);
+            _setStorageMode(name, StorageMode.OnChain);
         }
         _putChunkFromCalldata(keccak256(name), chunkId, data, msg.value);
     }
@@ -99,7 +98,7 @@ contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager {
         StorageMode mode = getStorageMode(name);
         require(mode == StorageMode.Uninitialized || mode == StorageMode.Blob, "Invalid storage mode");
         if (mode == StorageMode.Uninitialized) {
-            setStorageMode(name, StorageMode.Blob);
+            _setStorageMode(name, StorageMode.Blob);
         }
         _putChunks(keccak256(name), chunkIds, sizes);
     }
@@ -111,8 +110,7 @@ contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager {
         } else if (mode == StorageMode.OnChain) {
             return _getChunk(keccak256(name), chunkId);
         }
-        bytes memory nil;
-        return (nil, false);
+        return (new bytes(0), false);
     }
 
     function chunkSize(bytes memory name, uint256 chunkId) public view virtual override returns (uint256, bool) {

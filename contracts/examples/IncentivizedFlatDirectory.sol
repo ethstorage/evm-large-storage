@@ -39,7 +39,7 @@ contract IncentivizedFlatDirectory is FlatDirectory {
         StorageMode mode = getStorageMode(name);
         require(mode == StorageMode.Uninitialized || mode == StorageMode.OnChain, "Invalid storage mode");
         if (mode == StorageMode.Uninitialized) {
-            setStorageMode(name, StorageMode.OnChain);
+            _setStorageMode(name, StorageMode.OnChain);
         }
         return
             _putChunkFromCalldata(
@@ -67,7 +67,7 @@ contract IncentivizedFlatDirectory is FlatDirectory {
         StorageMode mode = getStorageMode(name);
         require(mode == StorageMode.Uninitialized || mode == StorageMode.OnChain, "Invalid storage mode");
         if (mode == StorageMode.Uninitialized) {
-            setStorageMode(name, StorageMode.OnChain);
+            _setStorageMode(name, StorageMode.OnChain);
         }
         return
             _putChunkFromCalldata(
