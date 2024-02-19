@@ -5,7 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 enum DecodeType {
     RawData,
-    PaddingPer31Bytes
+    PaddingPer31Bytes,
+    OptimismCompactBlob
 }
 
 interface IEthStorageContract {
@@ -84,7 +85,7 @@ contract BlobStorageManager is Ownable {
             return (new bytes(0), false);
         }
 
-        bytes memory data = storageContract.get(keyToChunks[key][chunkId], DecodeType.PaddingPer31Bytes, 0, length);
+        bytes memory data = storageContract.get(keyToChunks[key][chunkId], DecodeType.OptimismCompactBlob, 0, length);
         return (data, true);
     }
 
@@ -99,7 +100,7 @@ contract BlobStorageManager is Ownable {
         for (uint256 chunkId = 0; chunkId < chunkNum; chunkId++) {
             bytes32 chunkKey = keyToChunks[key][chunkId];
             uint256 length = storageContract.size(chunkKey);
-            storageContract.get(chunkKey, DecodeType.PaddingPer31Bytes, 0, length);
+            storageContract.get(chunkKey, DecodeType.OptimismCompactBlob, 0, length);
 
             assembly {
                 returndatacopy(add(add(concatenatedData, offset), 0x20), 0x40, length)
