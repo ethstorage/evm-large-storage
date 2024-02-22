@@ -8,7 +8,8 @@ contract EthStorageContractTest is LargeStorageManager(0) {
 
     enum DecodeType {
         RawData,
-        PaddingPer31Bytes
+        PaddingPer31Bytes,
+        OptimismCompactBlob
     }
 
     event PutBlob(bytes32 key, uint256 blobIdx, uint256 length);
