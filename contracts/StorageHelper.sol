@@ -171,7 +171,7 @@ library StorageHelper {
     function returnBytesInplace(bytes memory content) internal pure {
         // equal to return abi.encode(content)
         uint256 size = content.length + 0x40; // pointer + size
-        size = (size + 0x20 + 0x1f) & ~uint256(0x1f);
+        size = (size + 0x1f) & ~uint256(0x1f);
         assembly {
             // (DATA CORRUPTION): the caller method must be "external returns (bytes)", cannot be public!
             mstore(sub(content, 0x20), 0x20)
