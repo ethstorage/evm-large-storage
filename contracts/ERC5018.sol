@@ -7,6 +7,8 @@ import "./BlobStorageManager.sol";
 
 contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager {
 
+    string public constant version = "1.0.0";
+
     enum StorageMode {
         Uninitialized,
         OnChain,
