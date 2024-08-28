@@ -4,8 +4,9 @@ pragma solidity ^0.8.0;
 import "./IERC5018.sol";
 import "./LargeStorageManager.sol";
 import "./BlobStorageManager.sol";
+import "./ISemver.sol";
 
-contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager {
+contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
 
     enum StorageMode {
         Uninitialized,
