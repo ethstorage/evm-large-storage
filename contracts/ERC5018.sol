@@ -4,8 +4,9 @@ pragma solidity ^0.8.0;
 import "./IERC5018.sol";
 import "./LargeStorageManager.sol";
 import "./BlobStorageManager.sol";
+import "./ISemver.sol";
 
-contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager {
+contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
 
     enum StorageMode {
         Uninitialized,
@@ -19,6 +20,12 @@ contract ERC5018 is IERC5018, LargeStorageManager, BlobStorageManager {
         uint32 maxChunkSize,
         address storageAddress
     ) LargeStorageManager(slotLimit) BlobStorageManager(maxChunkSize, storageAddress) {}
+
+    /// @notice Semantic version.
+    /// @custom:semver 1.0.0
+    function version() public pure virtual returns (string memory) {
+        return "1.0.0";
+    }
 
     function getStorageMode(bytes memory name) public view returns (StorageMode) {
         return storageModes[keccak256(name)];
