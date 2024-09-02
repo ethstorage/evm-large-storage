@@ -8,11 +8,6 @@ import "./ISemver.sol";
 
 contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
 
-    enum StorageMode {
-        Uninitialized,
-        OnChain,
-        Blob
-    }
     mapping(bytes32 => StorageMode) storageModes;
 
     constructor(
@@ -192,7 +187,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         }
     }
 
-    function getUploadInfo(bytes memory name) public view returns (StorageMode mode, uint256 count, uint256 payment) {
+    function getUploadInfo(bytes memory name) public override view returns (StorageMode mode, uint256 count, uint256 payment) {
         bytes32 key = keccak256(name);
         mode = storageModes[key];
 
