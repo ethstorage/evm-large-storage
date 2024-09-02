@@ -169,7 +169,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return 0;
     }
 
-    function getChunkHashes(bytes memory name, uint256[] memory chunkIds) public override view returns (bytes32[] memory hashes) {
+    function getChunkHashes(bytes memory name, uint256[] memory chunkIds) public view returns (bytes32[] memory hashes) {
         bytes32 key = keccak256(name);
         StorageMode mode = storageModes[key];
 
@@ -182,5 +182,20 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
                 hashes[i] = keccak256(localData);
             }
         }
+    }
+
+    function getUploadInfo(bytes memory name) public view returns (StorageMode mode, uint256 count, uint256 payment) {
+        bytes32 key = keccak256(name);
+        mode = storageModes[key];
+
+        if (mode == StorageMode.Blob) {
+            count = _countChunksFromBlob(key);
+        } else if (mode == StorageMode.OnChain) {
+            count = _countChunks(key);
+        } else {
+            count = 0;
+        }
+
+        payment = address(storageContract) != address(0) ? upfrontPayment() : 0;
     }
 }
