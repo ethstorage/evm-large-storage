@@ -172,12 +172,22 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return 0;
     }
 
-    function getChunkHashes(bytes[] memory names, uint256[] memory chunkIds) public override view returns (bytes32[] memory hashes) {
-        require(names.length == chunkIds.length, "Invalid length");
-        hashes = new bytes32[](names.length);
-        for (uint8 i = 0; i < names.length; i++) {
-            hashes[i] = getChunkHash(names[i], chunkIds[i]);
+    function getBatchChunkHashes(FileChunk[] memory fileChunks) external view returns (bytes32[] memory) {
+        uint totalChunks = 0;
+
+        for (uint i = 0; i < fileChunks.length; i++) {
+            totalChunks += fileChunks[i].chunkIds.length;
         }
+
+        bytes32[] memory hashes = new bytes32[](totalChunks);
+        uint index = 0;
+        for (uint i = 0; i < fileChunks.length; i++) {
+            for (uint j = 0; j < fileChunks[i].chunkIds.length; j++) {
+                hashes[index] = getChunkHash(fileChunks[i].name, fileChunks[i].chunkIds[j]);
+                index++;
+            }
+        }
+        return hashes;
     }
 
     function getUploadInfo(bytes memory name) public override view returns (StorageMode mode, uint256 count, uint256 payment) {
