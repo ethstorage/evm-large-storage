@@ -172,18 +172,11 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return 0;
     }
 
-    function getChunkHashes(bytes memory name, uint256[] memory chunkIds) public override view returns (bytes32[] memory hashes) {
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
-
-        hashes = new bytes32[](chunkIds.length);
-        for (uint8 i = 0; i < chunkIds.length; i++) {
-            if (mode == StorageMode.Blob) {
-                hashes[i] = _getChunkHashFromBlob(key, chunkIds[i]);
-            } else if (mode == StorageMode.OnChain) {
-                (bytes memory localData,) = _getChunk(key, chunkIds[i]);
-                hashes[i] = keccak256(localData);
-            }
+    function getChunkHashes(bytes[] memory names, uint256[] memory chunkIds) public override view returns (bytes32[] memory hashes) {
+        require(names.length == chunkIds.length, "Invalid length");
+        hashes = new bytes32[](names.length);
+        for (uint8 i = 0; i < names.length; i++) {
+            hashes[i] = getChunkHash(names[i], chunkIds[i]);
         }
     }
 

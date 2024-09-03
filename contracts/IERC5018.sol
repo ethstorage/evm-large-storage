@@ -43,7 +43,7 @@ interface IERC5018 {
 
     function getChunkHash(bytes memory name, uint256 chunkId) external view returns (bytes32);
 
-    function getChunkHashes(bytes memory name, uint256[] memory chunkIds) external view returns (bytes32[] memory hashes);
+    function getChunkHashes(bytes[] memory names, uint256[] memory chunkIds) external view returns (bytes32[] memory hashes);
 
     function getUploadInfo(bytes memory name) external view returns (StorageMode mode, uint256 count, uint256 payment);
 }
