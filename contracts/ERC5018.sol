@@ -33,8 +33,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     function read(bytes memory name) public view virtual override returns (bytes memory, bool) {
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             return _getFromBlob(key);
         } else if (mode == StorageMode.OnChain) {
@@ -44,8 +43,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     function size(bytes memory name) public view virtual override returns (uint256, uint256) {
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             return _sizeFromBlob(key);
         } else if (mode == StorageMode.OnChain) {
@@ -55,8 +53,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     function remove(bytes memory name) public virtual override onlyOwner returns (uint256) {
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         storageModes[key] = StorageMode.Uninitialized;
         if (mode == StorageMode.Blob) {
             return _removeFromBlob(key, 0);
@@ -67,8 +64,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     function countChunks(bytes memory name) public view virtual override returns (uint256) {
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             return _countChunksFromBlob(key);
         } else if (mode == StorageMode.OnChain) {
@@ -83,8 +79,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         uint256 chunkId,
         bytes calldata data
     ) public payable onlyOwner virtual override {
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         require(mode == StorageMode.Uninitialized || mode == StorageMode.OnChain, "Invalid storage mode");
         if (mode == StorageMode.Uninitialized) {
             storageModes[key] = StorageMode.OnChain;
@@ -99,8 +94,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     ) public onlyOwner override payable {
         require(isSupportBlob(), "The current network does not support blob upload");
 
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         require(mode == StorageMode.Uninitialized || mode == StorageMode.Blob, "Invalid storage mode");
         if (mode == StorageMode.Uninitialized) {
             storageModes[key] = StorageMode.Blob;
@@ -109,8 +103,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     function readChunk(bytes memory name, uint256 chunkId) public view virtual override returns (bytes memory, bool) {
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             return _getChunkFromBlob(key, chunkId);
         } else if (mode == StorageMode.OnChain) {
@@ -120,8 +113,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     function chunkSize(bytes memory name, uint256 chunkId) public view virtual override returns (uint256, bool) {
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             return _chunkSizeFromBlob(key, chunkId);
         } else if (mode == StorageMode.OnChain) {
@@ -131,8 +123,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     function removeChunk(bytes memory name, uint256 chunkId) public virtual onlyOwner override returns (bool) {
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             return _removeChunkFromBlob(key, chunkId);
         } else if (mode == StorageMode.OnChain) {
@@ -142,8 +133,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     function truncate(bytes memory name, uint256 chunkId) public virtual onlyOwner override returns (uint256) {
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             return _removeFromBlob(key, chunkId);
         } else if (mode == StorageMode.OnChain) {
@@ -161,8 +151,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     function getChunkHash(bytes memory name, uint256 chunkId) public override view returns (bytes32) {
-        bytes32 key = keccak256(name);
-        StorageMode mode = storageModes[key];
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             return _getChunkHashFromBlob(key, chunkId);
         } else if (mode == StorageMode.OnChain) {
@@ -191,9 +180,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     function getUploadInfo(bytes memory name) public override view returns (StorageMode mode, uint256 count, uint256 payment) {
-        bytes32 key = keccak256(name);
-        mode = storageModes[key];
-
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             count = _countChunksFromBlob(key);
         } else if (mode == StorageMode.OnChain) {
@@ -203,5 +190,11 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         }
 
         payment = address(storageContract) != address(0) ? upfrontPayment() : 0;
+        return (mode, count, payment);
+    }
+
+    function _getModeAndKey(bytes memory name) private view returns (bytes32 key, StorageMode mode) {
+        key = keccak256(name);
+        mode = storageModes[key];
     }
 }
