@@ -161,7 +161,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return 0;
     }
 
-    function getBatchChunkHashes(FileChunk[] memory fileChunks) external view returns (bytes32[] memory) {
+    function getChunkHashesBatch(FileChunk[] memory fileChunks) external view returns (bytes32[] memory) {
         uint totalChunks = 0;
 
         for (uint i = 0; i < fileChunks.length; i++) {
@@ -179,18 +179,27 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return hashes;
     }
 
-    function getUploadInfo(bytes memory name) public override view returns (StorageMode mode, uint256 count, uint256 payment) {
-        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
+    function getChunkCountsBatch(bytes[] memory names) external view returns (uint256[] memory) {
+        uint256[] memory counts = new uint256[](names.length);
+        for (uint i = 0; i < names.length; i++) {
+            counts[i] = countChunks(names[i]);
+        }
+        return counts;
+    }
+
+    function getUploadDetails(bytes memory name) public override view returns (StorageMode mode, uint256 chunkCount, uint256 storageCost) {
+        bytes32 key;
+        (key, mode) = _getModeAndKey(name);
+
         if (mode == StorageMode.Blob) {
-            count = _countChunksFromBlob(key);
+            chunkCount = _countChunksFromBlob(key);
         } else if (mode == StorageMode.OnChain) {
-            count = _countChunks(key);
+            chunkCount = _countChunks(key);
         } else {
-            count = 0;
+            chunkCount = 0;
         }
 
-        payment = address(storageContract) != address(0) ? upfrontPayment() : 0;
-        return (mode, count, payment);
+        storageCost = address(storageContract) != address(0) ? upfrontPayment() : 0;
     }
 
     function _getModeAndKey(bytes memory name) private view returns (bytes32 key, StorageMode mode) {
