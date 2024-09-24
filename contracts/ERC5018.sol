@@ -187,7 +187,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return counts;
     }
 
-    function getUploadDetails(bytes memory name) public override view returns (StorageMode mode, uint256 chunkCount, uint256 storageCost) {
+    function getUploadInfo(bytes memory name) public override view returns (StorageMode mode, uint256 chunkCount, uint256 storageCost) {
         bytes32 key;
         (key, mode) = _getModeAndKey(name);
 

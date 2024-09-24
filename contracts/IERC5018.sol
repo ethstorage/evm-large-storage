@@ -52,5 +52,5 @@ interface IERC5018 {
 
     function getChunkCountsBatch(bytes[] memory names) external view returns (uint256[] memory);
 
-    function getUploadDetails(bytes memory name) external view returns (StorageMode mode, uint256 chunkCount, uint256 storageCost);
+    function getUploadInfo(bytes memory name) external view returns (StorageMode mode, uint256 chunkCount, uint256 storageCost);
 }
