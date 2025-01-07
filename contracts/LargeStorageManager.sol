@@ -75,11 +75,9 @@ contract LargeStorageManager {
         bytes32 metadata = keyToMetadata[key][chunkId];
 
         if (metadata.isInSlot()) {
-            bytes memory res = SlotHelper.getRaw(keyToSlots[key][chunkId], metadata);
-            return (res, true);
+            return (SlotHelper.getRaw(keyToSlots[key][chunkId], metadata), true);
         } else {
-            address addr = metadata.bytes32ToAddr();
-            return StorageHelper.getRaw(addr);
+            return StorageHelper.getRaw(metadata.bytes32ToAddr());
         }
     }
 
@@ -89,23 +87,16 @@ contract LargeStorageManager {
         if (metadata == bytes32(0)) {
             return (0, false);
         } else if (metadata.isInSlot()) {
-            uint256 len = metadata.decodeLen();
-            return (len, true);
+            return (metadata.decodeLen(), true);
         } else {
-            address addr = metadata.bytes32ToAddr();
-            return StorageHelper.sizeRaw(addr);
+            return StorageHelper.sizeRaw(metadata.bytes32ToAddr());
         }
     }
 
     function _countChunks(bytes32 key) internal view returns (uint256) {
         uint256 chunkId = 0;
 
-        while (true) {
-            bytes32 metadata = keyToMetadata[key][chunkId];
-            if (metadata == bytes32(0x0)) {
-                break;
-            }
-
+        while (keyToMetadata[key][chunkId] != bytes32(0)) {
             chunkId++;
         }
 
@@ -162,11 +153,8 @@ contract LargeStorageManager {
 
     // Returns # of chunks deleted
     function _remove(bytes32 key, uint256 chunkId) internal returns (uint256) {
-        while (true) {
+        while (keyToMetadata[key][chunkId] != bytes32(0)) {
             bytes32 metadata = keyToMetadata[key][chunkId];
-            if (metadata == bytes32(0x0)) {
-                break;
-            }
 
             if (!metadata.isInSlot()) {
                 address addr = metadata.bytes32ToAddr();

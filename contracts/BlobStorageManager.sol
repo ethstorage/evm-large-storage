@@ -52,11 +52,7 @@ contract BlobStorageManager is Ownable {
 
     function _countChunksFromBlob(bytes32 key) internal view returns (uint256) {
         uint256 chunkId = 0;
-        while (true) {
-            bytes32 chunkKey = keyToChunks[key][chunkId];
-            if (chunkKey == bytes32(0)) {
-                break;
-            }
+        while (keyToChunks[key][chunkId] != bytes32(0)) {
             chunkId++;
         }
         return chunkId;
@@ -112,8 +108,7 @@ contract BlobStorageManager is Ownable {
     }
 
     function _removeChunkFromBlob(bytes32 key, uint256 chunkId) internal returns (bool) {
-        bytes32 chunkKey = keyToChunks[key][chunkId];
-        if (chunkKey == bytes32(0)) {
+        if (keyToChunks[key][chunkId] == bytes32(0)) {
             return false;
         }
         if (keyToChunks[key][chunkId + 1] != bytes32(0)) {
@@ -128,12 +123,7 @@ contract BlobStorageManager is Ownable {
     }
 
     function _removeFromBlob(bytes32 key, uint256 chunkId) internal returns (uint256) {
-        while (true) {
-            bytes32 chunkKey = keyToChunks[key][chunkId];
-            if (chunkKey == bytes32(0)) {
-                break;
-            }
-
+        while (keyToChunks[key][chunkId] != bytes32(0)) {
             // TODO The current version does not support the delete
             // storageContract.remove(keyToChunks[key][chunkId]);
             keyToChunks[key][chunkId] = bytes32(0);
@@ -143,8 +133,7 @@ contract BlobStorageManager is Ownable {
     }
 
     function _preparePutFromBlob(bytes32 key, uint256 chunkId) private {
-        bytes32 chunkKey = keyToChunks[key][chunkId];
-        if (chunkKey == bytes32(0)) {
+        if (keyToChunks[key][chunkId] == bytes32(0)) {
             require(chunkId == 0 || keyToChunks[key][chunkId - 1] != bytes32(0), "must replace or append");
         } else {
             // TODO The current version does not support the delete

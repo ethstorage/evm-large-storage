@@ -2,6 +2,17 @@
 pragma solidity ^0.8.0;
 
 interface IERC5018 {
+    enum StorageMode {
+        Uninitialized,
+        OnChain,
+        Blob
+    }
+
+    struct FileChunk {
+        bytes name;
+        uint256[] chunkIds;
+    }
+
     // Large storage methods
     function write(bytes memory name, bytes memory data) external payable;
 
@@ -36,4 +47,10 @@ interface IERC5018 {
     function destruct() external;
 
     function getChunkHash(bytes memory name, uint256 chunkId) external view returns (bytes32);
+
+    function getChunkHashesBatch(FileChunk[] memory fileChunks) external view returns (bytes32[] memory);
+
+    function getChunkCountsBatch(bytes[] memory names) external view returns (uint256[] memory);
+
+    function getUploadInfo(bytes memory name) external view returns (StorageMode mode, uint256 chunkCount, uint256 storageCost);
 }
