@@ -14,6 +14,7 @@ contract LargeStorageManager {
 
     mapping(bytes32 => mapping(uint256 => bytes32)) internal keyToMetadata;
     mapping(bytes32 => mapping(uint256 => mapping(uint256 => bytes32))) internal keyToSlots;
+    mapping(bytes32 => uint256) internal keyToChunkNum;
 
     constructor(uint8 slotLimit) {
         SLOT_LIMIT = slotLimit;
@@ -47,6 +48,9 @@ contract LargeStorageManager {
     ) internal {
         _preparePut(key, chunkId);
 
+        if (keyToMetadata[key][chunkId] == bytes32(0)) {
+            keyToChunkNum[key]++;
+        }
         // store data and rewrite metadata
         if (data.length > SLOT_LIMIT) {
             keyToMetadata[key][chunkId] = StorageHelper.putRawFromCalldata(data, value).addrToBytes32();
@@ -63,6 +67,9 @@ contract LargeStorageManager {
     ) internal {
         _preparePut(key, chunkId);
 
+        if (keyToMetadata[key][chunkId] == bytes32(0)) {
+            keyToChunkNum[key]++;
+        }
         // store data and rewrite metadata
         if (data.length > SLOT_LIMIT) {
             keyToMetadata[key][chunkId] = StorageHelper.putRaw(data, value).addrToBytes32();
@@ -94,13 +101,7 @@ contract LargeStorageManager {
     }
 
     function _countChunks(bytes32 key) internal view returns (uint256) {
-        uint256 chunkId = 0;
-
-        while (keyToMetadata[key][chunkId] != bytes32(0)) {
-            chunkId++;
-        }
-
-        return chunkId;
+        return keyToChunkNum[key];
     }
 
     // Returns (size, # of chunks).
@@ -163,6 +164,7 @@ contract LargeStorageManager {
             }
 
             keyToMetadata[key][chunkId] = bytes32(0x0);
+            keyToChunkNum[key]--;
 
             chunkId++;
         }
@@ -171,16 +173,10 @@ contract LargeStorageManager {
     }
 
     function _removeChunk(bytes32 key, uint256 chunkId) internal returns (bool) {
+        if (chunkId != keyToChunkNum[key] - 1) {
+            return false;
+        }
         bytes32 metadata = keyToMetadata[key][chunkId];
-        if (metadata == bytes32(0x0)) {
-            return false;
-        }
-
-        if (keyToMetadata[key][chunkId + 1] != bytes32(0x0)) {
-            // only the last chunk can be removed
-            return false;
-        }
-
         if (!metadata.isInSlot()) {
             address addr = metadata.bytes32ToAddr();
             // remove new contract
@@ -188,6 +184,7 @@ contract LargeStorageManager {
         }
 
         keyToMetadata[key][chunkId] = bytes32(0x0);
+        keyToChunkNum[key]--;
 
         return true;
     }
