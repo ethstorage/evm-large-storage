@@ -129,7 +129,7 @@ contract BlobStorageManager is Ownable {
         return chunkId;
     }
 
-    function _preparePutFromBlob(bytes32 key, uint256 chunkId) private {
+    function _preparePutFromBlob(bytes32 key, uint256 chunkId, uint256 newSize) private {
         require(chunkId <= keyToChunkNum[key], "Must replace or append");
         if (chunkId < keyToChunkNum[key]) {
             // replace
@@ -142,6 +142,7 @@ contract BlobStorageManager is Ownable {
             // add
             keyToChunkNum[key]++;
         }
+        keyToTotalSize[key] += sizes[i];
     }
 
     function _putChunks(
@@ -155,12 +156,11 @@ contract BlobStorageManager is Ownable {
 
         for (uint256 i = 0; i < length; i++) {
             require(0 < sizes[i] && sizes[i] <= maxChunkSize, "Invalid chunk length");
-            _preparePutFromBlob(key, chunkIds[i]);
+            _preparePutFromBlob(key, chunkIds[i], sizes[i]);
 
             bytes32 chunkKey = keccak256(abi.encode(msg.sender, key, chunkIds[i]));
             storageContract.putBlob{value : cost}(chunkKey, i, sizes[i]);
             keyToChunks[key][chunkIds[i]] = chunkKey;
-            keyToTotalSize[key] += sizes[i];
         }
     }
 

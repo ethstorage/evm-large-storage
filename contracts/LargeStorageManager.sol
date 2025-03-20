@@ -25,12 +25,16 @@ contract LargeStorageManager {
         return SLOT_LIMIT > 0;
     }
 
-    function _preparePut(bytes32 key, uint256 chunkId) private {
+    function _preparePut(bytes32 key, uint256 chunkId, uint256 newSize) private {
         bytes32 metadata = keyToMetadata[key][chunkId];
-
         if (metadata == bytes32(0)) {
             require(chunkId == 0 || keyToMetadata[key][chunkId - 1] != bytes32(0x0), "must replace or append");
+            keyToChunkNum[key]++;
+        } else {
+            (uint256 oldSize, ) = _chunkSize(key, chunkId);
+            keyToTotalSize[key] -= oldSize;
         }
+        keyToTotalSize[key] += newSize;
 
         if (!metadata.isInSlot()) {
             address addr = metadata.bytes32ToAddr();
@@ -47,15 +51,8 @@ contract LargeStorageManager {
         bytes calldata data,
         uint256 value
     ) internal {
-        _preparePut(key, chunkId);
+        _preparePut(key, chunkId, data.length);
 
-        if (keyToMetadata[key][chunkId] == bytes32(0)) {
-            keyToChunkNum[key]++;
-        } else {
-            (uint256 chunkSize, ) = _chunkSize(key, chunkId);
-            keyToTotalSize[key] -= chunkSize;
-        }
-        keyToTotalSize[key] += data.length;
         // store data and rewrite metadata
         if (data.length > SLOT_LIMIT) {
             keyToMetadata[key][chunkId] = StorageHelper.putRawFromCalldata(data, value).addrToBytes32();
@@ -70,15 +67,8 @@ contract LargeStorageManager {
         bytes memory data,
         uint256 value
     ) internal {
-        _preparePut(key, chunkId);
+        _preparePut(key, chunkId, data.length);
 
-        if (keyToMetadata[key][chunkId] == bytes32(0)) {
-            keyToChunkNum[key]++;
-        } else {
-            (uint256 chunkSize, ) = _chunkSize(key, chunkId);
-            keyToTotalSize[key] -= chunkSize;
-        }
-        keyToTotalSize[key] += data.length;
         // store data and rewrite metadata
         if (data.length > SLOT_LIMIT) {
             keyToMetadata[key][chunkId] = StorageHelper.putRaw(data, value).addrToBytes32();
