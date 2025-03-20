@@ -15,6 +15,7 @@ contract LargeStorageManager {
     mapping(bytes32 => mapping(uint256 => bytes32)) internal keyToMetadata;
     mapping(bytes32 => mapping(uint256 => mapping(uint256 => bytes32))) internal keyToSlots;
     mapping(bytes32 => uint256) private keyToChunkNum;
+    mapping(bytes32 => uint256) private keyToTotalSize;
 
     constructor(uint8 slotLimit) {
         SLOT_LIMIT = slotLimit;
@@ -50,7 +51,11 @@ contract LargeStorageManager {
 
         if (keyToMetadata[key][chunkId] == bytes32(0)) {
             keyToChunkNum[key]++;
+        } else {
+            (uint256 chunkSize, ) = _chunkSize(key, chunkId);
+            keyToTotalSize[key] -= chunkSize;
         }
+        keyToTotalSize[key] += data.length;
         // store data and rewrite metadata
         if (data.length > SLOT_LIMIT) {
             keyToMetadata[key][chunkId] = StorageHelper.putRawFromCalldata(data, value).addrToBytes32();
@@ -69,7 +74,11 @@ contract LargeStorageManager {
 
         if (keyToMetadata[key][chunkId] == bytes32(0)) {
             keyToChunkNum[key]++;
+        } else {
+            (uint256 chunkSize, ) = _chunkSize(key, chunkId);
+            keyToTotalSize[key] -= chunkSize;
         }
+        keyToTotalSize[key] += data.length;
         // store data and rewrite metadata
         if (data.length > SLOT_LIMIT) {
             keyToMetadata[key][chunkId] = StorageHelper.putRaw(data, value).addrToBytes32();
@@ -106,20 +115,7 @@ contract LargeStorageManager {
 
     // Returns (size, # of chunks).
     function _size(bytes32 key) internal view returns (uint256, uint256) {
-        uint256 size = 0;
-        uint256 chunkId = 0;
-
-        while (true) {
-            (uint256 chunkSize, bool found) = _chunkSize(key, chunkId);
-            if (!found) {
-                break;
-            }
-
-            size += chunkSize;
-            chunkId++;
-        }
-
-        return (size, chunkId);
+        return (keyToTotalSize[key], keyToChunkNum[key]);
     }
 
     function _get(bytes32 key) internal view returns (bytes memory, bool) {
@@ -159,8 +155,12 @@ contract LargeStorageManager {
 
             if (!metadata.isInSlot()) {
                 address addr = metadata.bytes32ToAddr();
+                (uint256 chunkSize, ) = StorageHelper.sizeRaw(addr);
+                keyToTotalSize[key] -= chunkSize;
                 // remove new contract
                 StorageSlotSelfDestructable(addr).destruct();
+            } else {
+                keyToTotalSize[key] -= metadata.decodeLen();
             }
 
             keyToMetadata[key][chunkId] = bytes32(0x0);
@@ -179,8 +179,12 @@ contract LargeStorageManager {
         bytes32 metadata = keyToMetadata[key][chunkId];
         if (!metadata.isInSlot()) {
             address addr = metadata.bytes32ToAddr();
+            (uint256 chunkSize, ) = StorageHelper.sizeRaw(addr);
+            keyToTotalSize[key] -= chunkSize;
             // remove new contract
             StorageSlotSelfDestructable(addr).destruct();
+        } else {
+            keyToTotalSize[key] -= metadata.decodeLen();
         }
 
         keyToMetadata[key][chunkId] = bytes32(0x0);
