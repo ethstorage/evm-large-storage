@@ -143,18 +143,16 @@ contract LargeStorageManager {
         while (keyToMetadata[key][chunkId] != bytes32(0)) {
             bytes32 metadata = keyToMetadata[key][chunkId];
 
+            (uint256 oldSize, ) = _chunkSize(key, chunkId);
             if (!metadata.isInSlot()) {
                 address addr = metadata.bytes32ToAddr();
-                (uint256 chunkSize, ) = StorageHelper.sizeRaw(addr);
-                keyToTotalSize[key] -= chunkSize;
                 // remove new contract
                 StorageSlotSelfDestructable(addr).destruct();
-            } else {
-                keyToTotalSize[key] -= metadata.decodeLen();
             }
 
             keyToMetadata[key][chunkId] = bytes32(0x0);
             keyToChunkNum[key]--;
+            keyToTotalSize[key] -= oldSize;
 
             chunkId++;
         }
@@ -166,19 +164,17 @@ contract LargeStorageManager {
         if (chunkId != keyToChunkNum[key] - 1) {
             return false;
         }
+        (uint256 oldSize, ) = _chunkSize(key, chunkId);
         bytes32 metadata = keyToMetadata[key][chunkId];
         if (!metadata.isInSlot()) {
             address addr = metadata.bytes32ToAddr();
-            (uint256 chunkSize, ) = StorageHelper.sizeRaw(addr);
-            keyToTotalSize[key] -= chunkSize;
             // remove new contract
             StorageSlotSelfDestructable(addr).destruct();
-        } else {
-            keyToTotalSize[key] -= metadata.decodeLen();
         }
 
         keyToMetadata[key][chunkId] = bytes32(0x0);
         keyToChunkNum[key]--;
+        keyToTotalSize[key] -= oldSize;
 
         return true;
     }
