@@ -14,7 +14,7 @@ contract LargeStorageManager {
 
     mapping(bytes32 => mapping(uint256 => bytes32)) internal keyToMetadata;
     mapping(bytes32 => mapping(uint256 => mapping(uint256 => bytes32))) internal keyToSlots;
-    mapping(bytes32 => uint256) internal keyToChunkNum;
+    mapping(bytes32 => uint256) private keyToChunkNum;
 
     constructor(uint8 slotLimit) {
         SLOT_LIMIT = slotLimit;

@@ -28,7 +28,7 @@ contract BlobStorageManager is Ownable {
     uint32 public maxChunkSize;
     IEthStorageContract public storageContract;
     mapping(bytes32 => mapping(uint256 => bytes32)) internal keyToChunks;
-    mapping(bytes32 => uint256) internal chunkCounts;
+    mapping(bytes32 => uint256) private keyToChunkNum;
 
     constructor(uint32 size, address storageAddress) {
         maxChunkSize = size;
@@ -52,11 +52,11 @@ contract BlobStorageManager is Ownable {
     }
 
     function _countChunksFromBlob(bytes32 key) internal view returns (uint256) {
-        return chunkCounts[key];
+        return keyToChunkNum[key];
     }
 
     function _chunkSizeFromBlob(bytes32 key, uint256 chunkId) internal view returns (uint256, bool) {
-        if (chunkId >= chunkCounts[key]) {
+        if (chunkId >= keyToChunkNum[key]) {
             return (0, false);
         }
         uint256 length = storageContract.size(keyToChunks[key][chunkId]);
@@ -64,7 +64,7 @@ contract BlobStorageManager is Ownable {
     }
 
     function _sizeFromBlob(bytes32 key) internal view returns (uint256, uint256) {
-        uint256 chunkNum = chunkCounts[key];
+        uint256 chunkNum = keyToChunkNum[key];
         uint256 size = 0;
         for (uint256 chunkId = 0; chunkId < chunkNum; chunkId++) {
             size += storageContract.size(keyToChunks[key][chunkId]);
@@ -105,14 +105,14 @@ contract BlobStorageManager is Ownable {
     }
 
     function _removeChunkFromBlob(bytes32 key, uint256 chunkId) internal returns (bool) {
-        if (chunkId != chunkCounts[key] - 1) {
+        if (chunkId != keyToChunkNum[key] - 1) {
             return false; // Only the last chunk can be removed
         }
 
         // TODO The current version does not support the delete
         // storageContract.remove(keyToChunks[key][chunkId]);
         keyToChunks[key][chunkId] = bytes32(0);
-        chunkCounts[key]--;
+        keyToChunkNum[key]--;
         return true;
     }
 
@@ -121,15 +121,15 @@ contract BlobStorageManager is Ownable {
             // TODO The current version does not support the delete
             // storageContract.remove(keyToChunks[key][chunkId]);
             keyToChunks[key][chunkId] = bytes32(0);
-            chunkCounts[key]--;
+            keyToChunkNum[key]--;
             chunkId++;
         }
         return chunkId;
     }
 
     function _preparePutFromBlob(bytes32 key, uint256 chunkId) private {
-        require(chunkId <= chunkCounts[key], "Must replace or append");
-        if (chunkId < chunkCounts[key]) {
+        require(chunkId <= keyToChunkNum[key], "Must replace or append");
+        if (chunkId < keyToChunkNum[key]) {
             // TODO The current version does not support the delete
             // storageContract.remove(keyToChunks[key][chunkId]);
         }
@@ -151,8 +151,8 @@ contract BlobStorageManager is Ownable {
             bytes32 chunkKey = keccak256(abi.encode(msg.sender, key, chunkIds[i]));
             storageContract.putBlob{value : cost}(chunkKey, i, sizes[i]);
             keyToChunks[key][chunkIds[i]] = chunkKey;
-            if (chunkIds[i] == chunkCounts[key]) {
-                chunkCounts[key]++;
+            if (chunkIds[i] == keyToChunkNum[key]) {
+                keyToChunkNum[key]++;
             }
         }
     }
