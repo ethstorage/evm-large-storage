@@ -74,16 +74,16 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     /// @notice This function is deprecated and will be removed in future versions.
-    /// @dev Use `writeChunksByCalldata` instead.
+    /// @dev Use `writeChunkByCalldata` instead.
     function writeChunk(
         bytes memory name,
         uint256 chunkId,
         bytes calldata data
     ) public payable onlyOwner virtual override {
-        writeChunksByCalldata(name, chunkId, data);
+        writeChunkByCalldata(name, chunkId, data);
     }
 
-    function writeChunksByCalldata(
+    function writeChunkByCalldata(
         bytes memory name,
         uint256 chunkId,
         bytes calldata data
@@ -97,16 +97,16 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     /// @notice This function is deprecated and will be removed in future versions.
-    /// @dev Use `writeChunksByBlob` instead.
+    /// @dev Use `writeChunksByBlobs` instead.
     function writeChunks(
         bytes memory name,
         uint256[] memory chunkIds,
         uint256[] memory sizes
     ) public onlyOwner override payable {
-        writeChunksByBlob(name, chunkIds, sizes);
+        writeChunksByBlobs(name, chunkIds, sizes);
     }
 
-    function writeChunksByBlob(
+    function writeChunksByBlobs(
         bytes memory name,
         uint256[] memory chunkIds,
         uint256[] memory sizes
