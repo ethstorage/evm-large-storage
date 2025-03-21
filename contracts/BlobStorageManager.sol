@@ -142,7 +142,7 @@ contract BlobStorageManager is Ownable {
             // add
             keyToChunkNum[key]++;
         }
-        keyToTotalSize[key] += sizes[i];
+        keyToTotalSize[key] += newSize;
     }
 
     function _putChunks(
