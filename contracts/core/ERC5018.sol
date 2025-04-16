@@ -21,8 +21,8 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, Ownable, IERC5018, 
         storageContract = IEthStorageContract(storageAddress);
     }
 
-    function setMaxChunkSize(uint32 size) public onlyOwner {
-        maxChunkSize = size;
+    function setMaxChunkSize(uint32 maxSize) public onlyOwner {
+        maxChunkSize = maxSize;
     }
 
     /// @notice Semantic version.
