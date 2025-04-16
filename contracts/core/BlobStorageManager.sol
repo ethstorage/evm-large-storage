@@ -23,7 +23,7 @@ interface IEthStorageContract {
     function upfrontPayment() external view returns (uint256);
 }
 
-contract BlobStorageManager is Ownable {
+contract BlobStorageManager {
 
     uint32 public maxChunkSize;
     IEthStorageContract public storageContract;
@@ -35,14 +35,6 @@ contract BlobStorageManager is Ownable {
     constructor(uint32 size, address storageAddress) {
         maxChunkSize = size;
         storageContract = IEthStorageContract(storageAddress);
-    }
-
-    function setStorageContract(address storageAddress) public onlyOwner {
-        storageContract = IEthStorageContract(storageAddress);
-    }
-
-    function setMaxChunkSize(uint32 size) public onlyOwner {
-        maxChunkSize = size;
     }
 
     function isSupportBlob() public view returns (bool) {

@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./IERC5018.sol";
+import "../interfaces/IERC5018.sol";
+import "../interfaces/ISemver.sol";
+
 import "./LargeStorageManager.sol";
 import "./BlobStorageManager.sol";
-import "./ISemver.sol";
 
-contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
+contract ERC5018 is LargeStorageManager, BlobStorageManager, Ownable, IERC5018, ISemver {
 
     mapping(bytes32 => StorageMode) storageModes;
 
@@ -15,6 +16,14 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         uint32 maxChunkSize,
         address storageAddress
     ) LargeStorageManager(slotLimit) BlobStorageManager(maxChunkSize, storageAddress) {}
+
+    function setStorageContract(address storageAddress) public onlyOwner {
+        storageContract = IEthStorageContract(storageAddress);
+    }
+
+    function setMaxChunkSize(uint32 size) public onlyOwner {
+        maxChunkSize = size;
+    }
 
     /// @notice Semantic version.
     /// @custom:semver 1.0.0
@@ -159,10 +168,6 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
             return _remove(key, chunkId);
         }
         return 0;
-    }
-
-    function refund() public onlyOwner override {
-        payable(owner()).transfer(address(this).balance);
     }
 
     function destruct() public onlyOwner override {
