@@ -24,10 +24,5 @@ jobs:
       - name: Install forge-std
         run: git submodule update --init --recursive
 
-      - name: Verify forge-std installation
-        run: |
-          ls -l lib/openzeppelin-contracts/lib/forge-std/src
-          test -f lib/openzeppelin-contracts/lib/forge-std/src/Script.sol
-
       - name: Run Forge tests
         run: forge test
