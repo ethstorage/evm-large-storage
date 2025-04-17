@@ -54,8 +54,6 @@ interface IERC5018 {
 
     function truncate(bytes memory name, uint256 chunkId) external returns (uint256);
 
-    function refund() external;
-
     function destruct() external;
 
     function getChunkHash(bytes memory name, uint256 chunkId) external view returns (bytes32);

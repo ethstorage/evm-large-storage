@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "./LargeStorageManager.sol";
+import "../core/LargeStorageManager.sol";
 
 contract EthStorageContractTest is LargeStorageManager(0) {
 
