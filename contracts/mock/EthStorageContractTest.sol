@@ -3,13 +3,9 @@
 pragma solidity ^0.8.0;
 
 import "../core/LargeStorageManager.sol";
+import "../core/BlobStorageManager.sol";
 
 contract EthStorageContractTest is LargeStorageManager(0) {
-
-    enum DecodeType {
-        RawData,
-        PaddingPer31Bytes
-    }
 
     event PutBlob(bytes32 key, uint256 blobIdx, uint256 length);
 
@@ -40,7 +36,7 @@ contract EthStorageContractTest is LargeStorageManager(0) {
         return bytes24(keccak256(localData));
     }
 
-    function upfrontPayment() external view returns (uint256) {
+    function upfrontPayment() external pure returns (uint256) {
         return 0;
     }
 }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IERC5018.sol";
 import "../interfaces/ISemver.sol";
 
@@ -15,7 +16,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, Ownable, IERC5018, 
         uint8 slotLimit,
         uint32 maxChunkSize,
         address storageAddress
-    ) LargeStorageManager(slotLimit) BlobStorageManager(maxChunkSize, storageAddress) {}
+    ) LargeStorageManager(slotLimit) BlobStorageManager(maxChunkSize, storageAddress) Ownable(msg.sender){}
 
     function setStorageContract(address storageAddress) public onlyOwner {
         storageContract = IEthStorageContract(storageAddress);
