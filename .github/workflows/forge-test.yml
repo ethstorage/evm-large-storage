@@ -1,0 +1,28 @@
+name: Foundry Tests
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  forge-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install submodules (if needed)
+        run: git submodule update --init --recursive
+
+      - name: Run Forge tests
+        run: forge test --ffi -vvv
