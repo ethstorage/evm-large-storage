@@ -5,5 +5,4 @@ cache
 .vscode
 /.env
 /broadcast/
-/lib/
 /out/
