@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "./FlatDirectory.sol";
+import "../FlatDirectory.sol";
 
 contract FlatDirectoryTest is FlatDirectory {
     constructor(uint8 slotLimit, uint32 maxChunkSize, address storageAddress) FlatDirectory(slotLimit, maxChunkSize, storageAddress) {}

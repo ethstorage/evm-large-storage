@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../StorageManager.sol";
+import "../core/StorageManager.sol";
 
 contract SimpleFlatDirectory is StorageManager {
     // event for EVM logging

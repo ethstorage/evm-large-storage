@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./SimpleFlatDirectory.sol";
-import "./FlatDirectory.sol";
+import "../FlatDirectory.sol";
 import "./SimpleComment.sol";
 
 contract SimpleBlog is SimpleFlatDirectory {
