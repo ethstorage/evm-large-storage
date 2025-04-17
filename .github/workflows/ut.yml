@@ -22,7 +22,7 @@ jobs:
           version: stable
 
       - name: Install forge-std
-        run: git submodule init && git submodule update
+        run: git submodule update --init --recursive
 
       - name: Run Forge tests
         run: forge test
