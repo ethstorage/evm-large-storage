@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "./LargeStorageManager.sol";
+import "../core/LargeStorageManager.sol";
 
 contract EthStorageContractTest is LargeStorageManager(0) {
 
@@ -27,7 +27,7 @@ contract EthStorageContractTest is LargeStorageManager(0) {
         _remove(key, 0);
     }
 
-    function get(bytes32 key, DecodeType decodeType, uint256 off, uint256 len) external view returns (bytes memory data) {
+    function get(bytes32 key, DecodeType, uint256, uint256) external view returns (bytes memory data) {
         (data,) = _get(key);
     }
 
@@ -40,7 +40,7 @@ contract EthStorageContractTest is LargeStorageManager(0) {
         return bytes24(keccak256(localData));
     }
 
-    function upfrontPayment() external view returns (uint256) {
+    function upfrontPayment() external pure returns (uint256) {
         return 0;
     }
 }
