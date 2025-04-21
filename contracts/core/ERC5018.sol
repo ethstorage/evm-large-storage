@@ -15,7 +15,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         uint8 slotLimit,
         uint32 maxChunkSize,
         address storageAddress
-    ) LargeStorageManager(slotLimit) BlobStorageManager(maxChunkSize, storageAddress) Ownable(msg.sender) {}
+    ) LargeStorageManager(slotLimit) BlobStorageManager(maxChunkSize, storageAddress) {}
 
     /// @notice Semantic version.
     /// @custom:semver 1.0.0

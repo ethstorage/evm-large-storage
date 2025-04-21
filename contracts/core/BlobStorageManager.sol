@@ -32,7 +32,7 @@ contract BlobStorageManager is Ownable {
     mapping(bytes32 => uint256) private keyToChunkNum;
     mapping(bytes32 => uint256) private keyToTotalSize;
 
-    constructor(uint32 size, address storageAddress) {
+    constructor(uint32 size, address storageAddress) Ownable(msg.sender) {
         maxChunkSize = size;
         storageContract = IEthStorageContract(storageAddress);
     }
@@ -41,8 +41,8 @@ contract BlobStorageManager is Ownable {
         storageContract = IEthStorageContract(storageAddress);
     }
 
-    function setMaxChunkSize(uint32 maxSize) public onlyOwner {
-        maxChunkSize = maxSize;
+    function setMaxChunkSize(uint32 size) public onlyOwner {
+        maxChunkSize = size;
     }
 
     function isSupportBlob() public view returns (bool) {
