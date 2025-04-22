@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-
 import "../interfaces/IERC5018.sol";
 import "../interfaces/ISemver.sol";
 
 import "./LargeStorageManager.sol";
 import "./BlobStorageManager.sol";
 
-contract ERC5018 is LargeStorageManager, BlobStorageManager, Ownable, IERC5018, ISemver {
+contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
 
     mapping(bytes32 => StorageMode) storageModes;
 
@@ -17,7 +15,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, Ownable, IERC5018, 
         uint8 slotLimit,
         uint32 maxChunkSize,
         address storageAddress
-    ) LargeStorageManager(slotLimit) BlobStorageManager(maxChunkSize, storageAddress) Ownable(msg.sender) {}
+    ) LargeStorageManager(slotLimit) BlobStorageManager(maxChunkSize, storageAddress) {}
 
     /// @notice Semantic version.
     /// @custom:semver 1.0.0
@@ -27,14 +25,6 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, Ownable, IERC5018, 
 
     function getStorageMode(bytes memory name) public view returns (StorageMode) {
         return storageModes[keccak256(name)];
-    }
-
-    function setStorageContract(address storageAddress) public onlyOwner {
-        storageContract = IEthStorageContract(storageAddress);
-    }
-
-    function setMaxChunkSize(uint32 maxSize) public onlyOwner {
-        maxChunkSize = maxSize;
     }
 
     // Large storage methods

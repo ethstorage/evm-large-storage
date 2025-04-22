@@ -30,7 +30,7 @@ contract BlobStorageManager {
     mapping(bytes32 => uint256) private keyToChunkNum;
     mapping(bytes32 => uint256) private keyToTotalSize;
 
-    constructor(uint32 size, address storageAddress) {
+    constructor(uint32 size, address storageAddress) Ownable(msg.sender) {
         maxChunkSize = size;
         storageContract = IEthStorageContract(storageAddress);
     }
