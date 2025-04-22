@@ -4,6 +4,7 @@ out = 'out'
 libs = ['lib']
 test = 'test'
 script = 'script'
+solc_version = "0.8.20"
 fs_permissions = [{ access = "read", path = "./.env" }]
 remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts/",
