@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./SlotHelper.sol";
+import "../libraries/SlotHelper.sol";
 
 contract SlotHelperTest {
     mapping(bytes32 => bytes32) public metadatas;

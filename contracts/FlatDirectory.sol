@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../ERC5018.sol";
+import "./core/ERC5018.sol";
 
 contract FlatDirectory is ERC5018 {
     bytes public defaultFile = "";

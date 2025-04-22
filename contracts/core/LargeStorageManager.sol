@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./optimize/SlotHelper.sol";
-import "./StorageHelper.sol";
-import "./StorageSlotSelfDestructable.sol";
+import "../libraries/SlotHelper.sol";
+import "../libraries/StorageHelper.sol";
+import "../libraries/StorageSlotSelfDestructable.sol";
 
 // Large storage manager to support arbitrarily-sized data with multiple chunk
 contract LargeStorageManager {

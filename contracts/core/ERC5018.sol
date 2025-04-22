@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./IERC5018.sol";
+import "../interfaces/IERC5018.sol";
+import "../interfaces/ISemver.sol";
+
 import "./LargeStorageManager.sol";
 import "./BlobStorageManager.sol";
-import "./ISemver.sol";
 
 contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
 
