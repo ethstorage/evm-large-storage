@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 enum DecodeType {
     RawData,
     PaddingPer31Bytes,
@@ -21,7 +23,7 @@ interface IEthStorageContract {
     function upfrontPayment() external view returns (uint256);
 }
 
-contract BlobStorageManager {
+contract BlobStorageManager is Ownable {
 
     uint32 public maxChunkSize;
     IEthStorageContract public storageContract;
@@ -33,6 +35,14 @@ contract BlobStorageManager {
     constructor(uint32 size, address storageAddress) Ownable(msg.sender) {
         maxChunkSize = size;
         storageContract = IEthStorageContract(storageAddress);
+    }
+
+    function setStorageContract(address storageAddress) public onlyOwner {
+        storageContract = IEthStorageContract(storageAddress);
+    }
+
+    function setMaxChunkSize(uint32 size) public onlyOwner {
+        maxChunkSize = size;
     }
 
     function isSupportBlob() public view returns (bool) {
