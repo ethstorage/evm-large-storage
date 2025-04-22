@@ -76,7 +76,8 @@ contract FlatDirectoryTest is Test {
         assertTrue(ok);
         assertEq(result, chunk1);
 
-        fd.removeChunk(name, 0);
+        bool removed = fd.removeChunk(name, 0);
+        assertTrue(!removed, "Only the last chunk can be removed");
         (uint256 size, uint256 count) = fd.size(name);
         assertEq(size, 30);
         assertEq(count, 2);
@@ -85,7 +86,8 @@ contract FlatDirectoryTest is Test {
         assertTrue(ok);
         assertEq(result, chunk0);
 
-        fd.removeChunk(name, 1);
+        removed = fd.removeChunk(name, 1);
+        assertTrue(removed, "Failed to remove chunk 1");
         (size, count) = fd.size(name);
         assertEq(size, 10);
         assertEq(count, 1);

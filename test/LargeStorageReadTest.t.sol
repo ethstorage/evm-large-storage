@@ -31,12 +31,16 @@ contract FlatDirectoryLargeReadTest is Test {
             fullData = bytes.concat(fullData, chunk);
         }
 
+        // Record gas for readNonView
         fd.readNonView(key);
-        fd.readManual(key);
+        Vm.Gas memory gasNonView = vm.lastCallGas();
 
-        // for comparison
-        // 85 chunks
-        // - readNonView: 12844889
-        // - readManual: 3278113
+        // Record gas for readManual
+        fd.readManual(key);
+        Vm.Gas memory gasManual = vm.lastCallGas();
+
+        console2.log("readNonView gas used:", gasNonView.gasTotalUsed); // 206975
+        console2.log("readManual gas used:", gasManual.gasTotalUsed); // 92300
+        assertLt(gasManual.gasTotalUsed, gasNonView.gasTotalUsed, "readManual should use less gas than readNonView");
     }
 }

@@ -121,7 +121,7 @@ contract ERC5018Test is Test {
     }
 
     function uploadCallData(bytes32 key, bytes memory buffer) internal {
-        uint256 maxChunkSize = 24 * 1024; // 24KB = 24576 bytes
+        uint256 maxChunkSize = 24 * 1024 - 326; // 24KB
         uint256 totalSize = buffer.length;
         uint256 offset = 0;
         uint256 index = 0;
