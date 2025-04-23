@@ -11,7 +11,6 @@ contract ERC5018Test is Test {
     EthStorageContractTest storageContract;
     ERC5018 ercBlob;
 
-    bytes fileName = bytes("test.txt");
     bytes hexName;
 
     uint32 constant BLOB_SIZE = (4 * 31 + 3) * 1024 - 4;
@@ -104,7 +103,7 @@ contract ERC5018Test is Test {
         uint256 cost = ercBlob.upfrontPayment() * numChunks;
         vm.recordLogs();
 
-        ercBlob.writeChunks{value: cost}(hexName, chunkIds, chunkSizes);
+        ercBlob.writeChunksByBlobs{value: cost}(hexName, chunkIds, chunkSizes);
 
         Vm.Log[] memory logs = vm.getRecordedLogs();
         for (uint256 j = 0; j < logs.length; j++) {
@@ -154,7 +153,6 @@ contract ERC5018Test is Test {
         }
         return bytes32(bytes(result));
     }
-
 
     function slice(bytes memory data, uint256 start, uint256 end) internal pure returns (bytes memory) {
         bytes memory result = new bytes(end - start);
