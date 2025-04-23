@@ -4,6 +4,9 @@ out = 'out'
 libs = ['lib']
 test = 'test'
 script = 'script'
+solc_version = "0.8.20"   # Ensure compatibility with your contracts
+optimizer = true          # Enable optimizer
+optimizer_runs = 200      # Use 200 runs for optimization
 fs_permissions = [{ access = "read", path = "./.env" }]
 remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts/",
