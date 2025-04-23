@@ -30,7 +30,7 @@ contract OptimizedFlatDirectoryTest is Test {
 
     function _writeChunk(bytes memory key, uint256 chunkId, uint256 size, uint8 context) internal {
         bytes memory data = _generateBytes(size, context);
-        fd.writeChunk(key, chunkId, data);
+        fd.writeChunkByCalldata(key, chunkId, data);
         (bytes memory out, bool ok) = fd.readChunk(key, chunkId);
         (uint256 sz,) = fd.chunkSize(key, chunkId);
         assertTrue(ok);
@@ -106,11 +106,11 @@ contract OptimizedFlatDirectoryTest is Test {
     function testWriteChunkRevertsOnNoAppend() public {
         bytes memory key = hex"01";
         bytes memory data0 = _generateBytes(1000, 1);
-        fd.writeChunk(key, 0, data0);
+        fd.writeChunkByCalldata(key, 0, data0);
 
         bytes memory data2 = _generateBytes(500, 4);
         vm.expectRevert();
-        fd.writeChunk(key, 2, data2);
+        fd.writeChunkByCalldata(key, 2, data2);
     }
 
     function testRemoveAndReWrite() public {
@@ -139,7 +139,7 @@ contract OptimizedFlatDirectoryTest is Test {
         assertEq(r0, d0);
 
         bytes memory d1 = _generateBytes(20, 2);
-        fd.writeChunk(key, 1, d1);
+        fd.writeChunkByCalldata(key, 1, d1);
         (bytes memory r1,) = fd.readChunk(key, 1);
         assertEq(r1, d1);
 

@@ -27,7 +27,7 @@ contract FlatDirectoryLargeReadTest is Test {
 
         for (uint256 i = 0; i < nchunk; i++) {
             bytes memory chunk = _randomBytes(12 * 1024, i);
-            fd.writeChunk(key, i, chunk);
+            fd.writeChunkByCalldata(key, i, chunk);
             fullData = bytes.concat(fullData, chunk);
         }
 

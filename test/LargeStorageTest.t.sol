@@ -42,7 +42,7 @@ contract FlatDirectoryTest is Test {
         assertEq(result, chunk0);
 
         bytes memory chunk1 = _randBytes(512);
-        fd.writeChunk(name, 1, chunk1);
+        fd.writeChunkByCalldata(name, 1, chunk1);
 
         (result, ok) = fd.readChunk(name, 1);
         assertTrue(ok);
@@ -70,7 +70,7 @@ contract FlatDirectoryTest is Test {
         assertEq(result, chunk0);
 
         bytes memory chunk1 = _randBytes(20);
-        fd.writeChunk(name, 1, chunk1);
+        fd.writeChunkByCalldata(name, 1, chunk1);
 
         (result, ok) = fd.readChunk(name, 1);
         assertTrue(ok);
@@ -106,10 +106,10 @@ contract FlatDirectoryTest is Test {
         fd.write(name, chunk0);
 
         bytes memory chunk1 = _randBytes(20);
-        fd.writeChunk(name, 1, chunk1);
+        fd.writeChunkByCalldata(name, 1, chunk1);
 
         bytes memory chunk2 = _randBytes(30);
-        fd.writeChunk(name, 2, chunk2);
+        fd.writeChunkByCalldata(name, 2, chunk2);
 
         fd.truncate(name, 3); // no-op
         (uint256 size, uint256 count) = fd.size(name);
