@@ -61,22 +61,6 @@ contract LargeStorageManager {
         }
     }
 
-    function _putChunk(
-        bytes32 key,
-        uint256 chunkId,
-        bytes memory data,
-        uint256 value
-    ) internal {
-        _preparePut(key, chunkId, data.length);
-
-        // store data and rewrite metadata
-        if (data.length > SLOT_LIMIT) {
-            keyToMetadata[key][chunkId] = StorageHelper.putRaw(data, value).addrToBytes32();
-        } else {
-            keyToMetadata[key][chunkId] = SlotHelper.putRaw(keyToSlots[key][chunkId], data);
-        }
-    }
-
     function _getChunk(bytes32 key, uint256 chunkId) internal view returns (bytes memory, bool) {
         bytes32 metadata = keyToMetadata[key][chunkId];
 
