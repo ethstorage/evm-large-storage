@@ -24,7 +24,6 @@ interface IEthStorageContract {
 }
 
 contract BlobStorageManager is Ownable {
-
     uint32 public maxChunkSize;
     IEthStorageContract public storageContract;
 
@@ -145,11 +144,7 @@ contract BlobStorageManager is Ownable {
         keyToTotalSize[key] += newSize;
     }
 
-    function _putChunks(
-        bytes32 key,
-        uint256[] memory chunkIds,
-        uint256[] memory sizes
-    ) internal {
+    function _putChunks(bytes32 key, uint256[] memory chunkIds, uint256[] memory sizes) internal {
         uint256 length = chunkIds.length;
         uint256 cost = storageContract.upfrontPayment();
         require(msg.value >= cost * length, "Insufficient balance");
@@ -159,7 +154,7 @@ contract BlobStorageManager is Ownable {
             _preparePutFromBlob(key, chunkIds[i], sizes[i]);
 
             bytes32 chunkKey = keccak256(abi.encode(msg.sender, key, chunkIds[i]));
-            storageContract.putBlob{value : cost}(chunkKey, i, sizes[i]);
+            storageContract.putBlob{value: cost}(chunkKey, i, sizes[i]);
             keyToChunks[key][chunkIds[i]] = chunkKey;
         }
     }

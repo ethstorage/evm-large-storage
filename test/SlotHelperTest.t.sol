@@ -31,7 +31,7 @@ contract SlotHelperTestSuite is Test {
 
         bytes32 metadata = slotHelper.encodeMetadata(data);
 
-        (uint256 resLen1, ) = slotHelper.decodeMetadata(metadata);
+        (uint256 resLen1,) = slotHelper.decodeMetadata(metadata);
         assertEq(resLen1, len, "decodeMetadata: length mismatch");
 
         (uint256 resLen2, bytes memory resData2) = slotHelper.decodeMetadata1(metadata);
@@ -58,7 +58,8 @@ contract SlotHelperTestSuite is Test {
 
     function testPutAndGetOver28Bytes() public {
         bytes32 key = hex"00000000000000000000000000000000000000000000000000000000000000aa";
-        bytes memory data = hex"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"; // 64 bytes
+        bytes memory data =
+            hex"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"; // 64 bytes
         uint256 datalen = 64;
 
         slotHelper.put(key, data);
