@@ -13,7 +13,9 @@ contract FlatDirectoryFactory {
     }
 
     function createWithSize(uint32 _size, address _ethStorage) public returns (address) {
-        return _create(0, _size, _ethStorage);
+
+
+        return _create(0,   _size, _ethStorage);
     }
 
     function createWithOptimized(uint32 _size, address _ethStorage) public returns (address) {
