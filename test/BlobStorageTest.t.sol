@@ -35,17 +35,17 @@ contract ERC5018Test is Test {
 
         uploadFile(fileData);
 
-        (uint256 actualSize, ) = ercBlob.size(hexName);
+        (uint256 actualSize,) = ercBlob.size(hexName);
         assertEq(actualSize, fileSize);
 
         uint256 chunkCount = ercBlob.countChunks(hexName);
         assertEq(chunkCount, 3);
 
         // chunk size
-        (uint256 chunkSize0, ) = ercBlob.chunkSize(hexName, 0);
+        (uint256 chunkSize0,) = ercBlob.chunkSize(hexName, 0);
         assertEq(chunkSize0, BLOB_SIZE);
 
-        (uint256 chunkSize2, ) = ercBlob.chunkSize(hexName, 2);
+        (uint256 chunkSize2,) = ercBlob.chunkSize(hexName, 2);
         assertEq(chunkSize2, fileSize - BLOB_SIZE * 2);
 
         // chunk hash
@@ -58,7 +58,7 @@ contract ERC5018Test is Test {
         assertEq(chunkHash2, localHash2);
 
         // file hash
-        (bytes memory outData, ) = ercBlob.read(hexName);
+        (bytes memory outData,) = ercBlob.read(hexName);
         assertEq(keccak256(outData), keccak256(fileData));
     }
 
@@ -70,17 +70,17 @@ contract ERC5018Test is Test {
 
         // Remove last chunk
         ercBlob.removeChunk(hexName, 3);
-        (uint256 sizeAfterRemove, ) = ercBlob.size(hexName);
+        (uint256 sizeAfterRemove,) = ercBlob.size(hexName);
         assertEq(sizeAfterRemove, BLOB_SIZE * 3);
 
         // Truncate to 1
         ercBlob.truncate(hexName, 1);
-        (uint256 sizeAfterTruncate, ) = ercBlob.size(hexName);
+        (uint256 sizeAfterTruncate,) = ercBlob.size(hexName);
         assertEq(sizeAfterTruncate, BLOB_SIZE);
 
         // Remove all
         ercBlob.remove(hexName);
-        (uint256 finalSize, ) = ercBlob.size(hexName);
+        (uint256 finalSize,) = ercBlob.size(hexName);
         assertEq(finalSize, 0);
     }
 

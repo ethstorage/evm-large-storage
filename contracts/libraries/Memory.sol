@@ -13,11 +13,7 @@ library Memory {
     // Compares the 'len' bytes starting at address 'addr' in memory with the 'len'
     // bytes starting at 'addr2'.
     // Returns 'true' if the bytes are the same, otherwise 'false'.
-    function equals(
-        uint256 addr,
-        uint256 addr2,
-        uint256 len
-    ) internal pure returns (bool equal) {
+    function equals(uint256 addr, uint256 addr2, uint256 len) internal pure returns (bool equal) {
         assembly {
             equal := eq(keccak256(addr, len), keccak256(addr2, len))
         }
@@ -27,19 +23,16 @@ library Memory {
     // 'bts'. It is allowed to set 'len' to a lower value then 'bts.length', in which case only
     // the first 'len' bytes will be compared.
     // Requires that 'bts.length >= len'
-    function equals(
-        uint256 addr,
-        uint256 len,
-        bytes memory bts
-    ) internal pure returns (bool equal) {
+    function equals(uint256 addr, uint256 len, bytes memory bts) internal pure returns (bool equal) {
         require(bts.length >= len);
         uint256 addr2;
         assembly {
-            addr2 := add(
-                bts,
-                /*BYTES_HEADER_SIZE*/
-                32
-            )
+            addr2 :=
+                add(
+                    bts,
+                    /*BYTES_HEADER_SIZE*/
+                    32
+                )
         }
         return equals(addr, addr2, len);
     }
@@ -50,10 +43,11 @@ library Memory {
     function allocate(uint256 numBytes) internal pure returns (uint256 addr) {
         // Take the current value of the free memory pointer, and update.
         assembly {
-            addr := mload(
-                /*FREE_MEM_PTR*/
-                0x40
-            )
+            addr :=
+                mload(
+                    /*FREE_MEM_PTR*/
+                    0x40
+                )
             mstore(
                 /*FREE_MEM_PTR*/
                 0x40,
@@ -81,11 +75,7 @@ library Memory {
     // Copy 'len' bytes from memory address 'src', to address 'dest'.
     // This function does not check the or destination, it only copies
     // the bytes.
-    function copy(
-        uint256 src,
-        uint256 dest,
-        uint256 len
-    ) internal pure {
+    function copy(uint256 src, uint256 dest, uint256 len) internal pure {
         // Copy word-length chunks while possible
         // Reverse copy to prevent out of memory bound error
         src = src + len;
@@ -121,11 +111,12 @@ library Memory {
     // Returns a memory pointer to the data portion of the provided bytes array.
     function dataPtr(bytes memory bts) internal pure returns (uint256 addr) {
         assembly {
-            addr := add(
-                bts,
-                /*BYTES_HEADER_SIZE*/
-                32
-            )
+            addr :=
+                add(
+                    bts,
+                    /*BYTES_HEADER_SIZE*/
+                    32
+                )
         }
     }
 
@@ -134,11 +125,12 @@ library Memory {
     function fromBytes(bytes memory bts) internal pure returns (uint256 addr, uint256 len) {
         len = bts.length;
         assembly {
-            addr := add(
-                bts,
-                /*BYTES_HEADER_SIZE*/
-                32
-            )
+            addr :=
+                add(
+                    bts,
+                    /*BYTES_HEADER_SIZE*/
+                    32
+                )
         }
     }
 
@@ -149,11 +141,12 @@ library Memory {
         bts = new bytes(len);
         uint256 btsptr;
         assembly {
-            btsptr := add(
-                bts,
-                /*BYTES_HEADER_SIZE*/
-                32
-            )
+            btsptr :=
+                add(
+                    bts,
+                    /*BYTES_HEADER_SIZE*/
+                    32
+                )
         }
         copy(addr, btsptr, len);
     }

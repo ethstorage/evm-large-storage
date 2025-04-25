@@ -6,7 +6,6 @@ import "../core/LargeStorageManager.sol";
 import "../core/BlobStorageManager.sol";
 
 contract EthStorageContractTest is LargeStorageManager(0) {
-
     event PutBlob(bytes32 key, uint256 blobIdx, uint256 length);
 
     // implement

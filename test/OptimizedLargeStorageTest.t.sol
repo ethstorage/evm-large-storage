@@ -84,22 +84,14 @@ contract OptimizedFlatDirectoryTest is Test {
         _writeChunk("0x01", 1, 1000, 2);
         _writeChunk("0x01", 2, 10000, 3);
 
-        bytes memory total1 = bytes.concat(
-            _generateBytes(100, 1),
-            _generateBytes(1000, 2),
-            _generateBytes(10000, 3)
-        );
+        bytes memory total1 = bytes.concat(_generateBytes(100, 1), _generateBytes(1000, 2), _generateBytes(10000, 3));
         _readAll("0x01", 100 + 1000 + 10000, total1);
 
         _writeChunk("0x02", 0, 1000, 1);
         _writeChunk("0x02", 1, 10, 2);
         _writeChunk("0x02", 2, 100, 3);
 
-        bytes memory total2 = bytes.concat(
-            _generateBytes(1000, 1),
-            _generateBytes(10, 2),
-            _generateBytes(100, 3)
-        );
+        bytes memory total2 = bytes.concat(_generateBytes(1000, 1), _generateBytes(10, 2), _generateBytes(100, 3));
         _readAll("0x02", 1000 + 10 + 100, total2);
     }
 
@@ -135,7 +127,7 @@ contract OptimizedFlatDirectoryTest is Test {
         bytes memory d0 = _generateBytes(10, 1);
         fd.write(key, d0);
 
-        (bytes memory r0, ) = fd.read(key);
+        (bytes memory r0,) = fd.read(key);
         assertEq(r0, d0);
 
         bytes memory d1 = _generateBytes(20, 2);

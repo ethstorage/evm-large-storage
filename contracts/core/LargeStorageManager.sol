@@ -31,7 +31,7 @@ contract LargeStorageManager {
             require(chunkId == 0 || keyToMetadata[key][chunkId - 1] != bytes32(0x0), "must replace or append");
             keyToChunkNum[key]++;
         } else {
-            (uint256 oldSize, ) = _chunkSize(key, chunkId);
+            (uint256 oldSize,) = _chunkSize(key, chunkId);
             keyToTotalSize[key] -= oldSize;
         }
         keyToTotalSize[key] += newSize;
@@ -45,12 +45,7 @@ contract LargeStorageManager {
         }
     }
 
-    function _putChunkFromCalldata(
-        bytes32 key,
-        uint256 chunkId,
-        bytes calldata data,
-        uint256 value
-    ) internal {
+    function _putChunkFromCalldata(bytes32 key, uint256 chunkId, bytes calldata data, uint256 value) internal {
         _preparePut(key, chunkId, data.length);
 
         // store data and rewrite metadata
@@ -112,7 +107,7 @@ contract LargeStorageManager {
                 SlotHelper.getRawAt(keyToSlots[key][chunkId], metadata, dataPtr);
             } else {
                 address addr = metadata.bytes32ToAddr();
-                (chunkSize, ) = StorageHelper.sizeRaw(addr);
+                (chunkSize,) = StorageHelper.sizeRaw(addr);
                 StorageHelper.getRawAt(addr, dataPtr);
             }
 
@@ -127,7 +122,7 @@ contract LargeStorageManager {
         while (keyToMetadata[key][chunkId] != bytes32(0)) {
             bytes32 metadata = keyToMetadata[key][chunkId];
 
-            (uint256 oldSize, ) = _chunkSize(key, chunkId);
+            (uint256 oldSize,) = _chunkSize(key, chunkId);
             if (!metadata.isInSlot()) {
                 address addr = metadata.bytes32ToAddr();
                 // remove new contract
@@ -148,7 +143,7 @@ contract LargeStorageManager {
         if (chunkId != keyToChunkNum[key] - 1) {
             return false;
         }
-        (uint256 oldSize, ) = _chunkSize(key, chunkId);
+        (uint256 oldSize,) = _chunkSize(key, chunkId);
         bytes32 metadata = keyToMetadata[key][chunkId];
         if (!metadata.isInSlot()) {
             address addr = metadata.bytes32ToAddr();

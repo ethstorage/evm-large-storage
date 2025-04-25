@@ -8,14 +8,12 @@ import "./LargeStorageManager.sol";
 import "./BlobStorageManager.sol";
 
 contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
-
     mapping(bytes32 => StorageMode) storageModes;
 
-    constructor(
-        uint8 slotLimit,
-        uint32 maxChunkSize,
-        address storageAddress
-    ) LargeStorageManager(slotLimit) BlobStorageManager(maxChunkSize, storageAddress) {}
+    constructor(uint8 slotLimit, uint32 maxChunkSize, address storageAddress)
+        LargeStorageManager(slotLimit)
+        BlobStorageManager(maxChunkSize, storageAddress)
+    {}
 
     /// @notice Semantic version.
     /// @custom:semver 1.0.0
@@ -28,7 +26,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     // Large storage methods
-    function write(bytes memory name, bytes calldata data) public onlyOwner payable virtual override {
+    function write(bytes memory name, bytes calldata data) public payable virtual override onlyOwner {
         // TODO: support multiple chunks
         return writeChunk(name, 0, data);
     }
@@ -76,19 +74,23 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
 
     /// @notice This function is deprecated and will be removed in future versions.
     /// @dev Use `writeChunkByCalldata` instead.
-    function writeChunk(
-        bytes memory name,
-        uint256 chunkId,
-        bytes calldata data
-    ) public payable onlyOwner virtual override {
+    function writeChunk(bytes memory name, uint256 chunkId, bytes calldata data)
+        public
+        payable
+        virtual
+        override
+        onlyOwner
+    {
         writeChunkByCalldata(name, chunkId, data);
     }
 
-    function writeChunkByCalldata(
-        bytes memory name,
-        uint256 chunkId,
-        bytes calldata data
-    ) public payable onlyOwner virtual override {
+    function writeChunkByCalldata(bytes memory name, uint256 chunkId, bytes calldata data)
+        public
+        payable
+        virtual
+        override
+        onlyOwner
+    {
         (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         require(mode == StorageMode.Uninitialized || mode == StorageMode.OnChain, "Invalid storage mode");
         if (mode == StorageMode.Uninitialized) {
@@ -99,19 +101,21 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
 
     /// @notice This function is deprecated and will be removed in future versions.
     /// @dev Use `writeChunksByBlobs` instead.
-    function writeChunks(
-        bytes memory name,
-        uint256[] memory chunkIds,
-        uint256[] memory sizes
-    ) public onlyOwner override payable {
+    function writeChunks(bytes memory name, uint256[] memory chunkIds, uint256[] memory sizes)
+        public
+        payable
+        override
+        onlyOwner
+    {
         writeChunksByBlobs(name, chunkIds, sizes);
     }
 
-    function writeChunksByBlobs(
-        bytes memory name,
-        uint256[] memory chunkIds,
-        uint256[] memory sizes
-    ) public onlyOwner override payable {
+    function writeChunksByBlobs(bytes memory name, uint256[] memory chunkIds, uint256[] memory sizes)
+        public
+        payable
+        override
+        onlyOwner
+    {
         require(isSupportBlob(), "The current network does not support blob upload");
 
         (bytes32 key, StorageMode mode) = _getModeAndKey(name);
@@ -142,7 +146,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return (0, false);
     }
 
-    function removeChunk(bytes memory name, uint256 chunkId) public virtual onlyOwner override returns (bool) {
+    function removeChunk(bytes memory name, uint256 chunkId) public virtual override onlyOwner returns (bool) {
         (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             return _removeChunkFromBlob(key, chunkId);
@@ -152,7 +156,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return false;
     }
 
-    function truncate(bytes memory name, uint256 chunkId) public virtual onlyOwner override returns (uint256) {
+    function truncate(bytes memory name, uint256 chunkId) public virtual override onlyOwner returns (uint256) {
         (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             return _removeFromBlob(key, chunkId);
@@ -162,15 +166,15 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return 0;
     }
 
-    function refund() public onlyOwner override {
+    function refund() public override onlyOwner {
         payable(owner()).transfer(address(this).balance);
     }
 
-    function destruct() public onlyOwner override {
+    function destruct() public override onlyOwner {
         selfdestruct(payable(owner()));
     }
 
-    function getChunkHash(bytes memory name, uint256 chunkId) public override view returns (bytes32) {
+    function getChunkHash(bytes memory name, uint256 chunkId) public view override returns (bytes32) {
         (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
             return _getChunkHashFromBlob(key, chunkId);
@@ -182,16 +186,16 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     function getChunkHashesBatch(FileChunk[] memory fileChunks) external view returns (bytes32[] memory) {
-        uint totalChunks = 0;
+        uint256 totalChunks = 0;
 
-        for (uint i = 0; i < fileChunks.length; i++) {
+        for (uint256 i = 0; i < fileChunks.length; i++) {
             totalChunks += fileChunks[i].chunkIds.length;
         }
 
         bytes32[] memory hashes = new bytes32[](totalChunks);
-        uint index = 0;
-        for (uint i = 0; i < fileChunks.length; i++) {
-            for (uint j = 0; j < fileChunks[i].chunkIds.length; j++) {
+        uint256 index = 0;
+        for (uint256 i = 0; i < fileChunks.length; i++) {
+            for (uint256 j = 0; j < fileChunks[i].chunkIds.length; j++) {
                 hashes[index] = getChunkHash(fileChunks[i].name, fileChunks[i].chunkIds[j]);
                 index++;
             }
@@ -201,13 +205,18 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
 
     function getChunkCountsBatch(bytes[] memory names) external view returns (uint256[] memory) {
         uint256[] memory counts = new uint256[](names.length);
-        for (uint i = 0; i < names.length; i++) {
+        for (uint256 i = 0; i < names.length; i++) {
             counts[i] = countChunks(names[i]);
         }
         return counts;
     }
 
-    function getUploadInfo(bytes memory name) public override view returns (StorageMode mode, uint256 chunkCount, uint256 storageCost) {
+    function getUploadInfo(bytes memory name)
+        public
+        view
+        override
+        returns (StorageMode mode, uint256 chunkCount, uint256 storageCost)
+    {
         bytes32 key;
         (key, mode) = _getModeAndKey(name);
 
