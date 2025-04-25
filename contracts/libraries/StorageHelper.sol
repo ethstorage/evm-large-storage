@@ -5,22 +5,14 @@ import "./Memory.sol";
 import "./StorageSlotFactory.sol";
 
 library StorageHelper {
-    // Minimal valid runtime: just returns empty data when called (PUSH1 0x00, RETURN)
-    // Full opcodes: 0x60 0x00 0xf3
-    // This runtime is never actually executed — it just makes the contract deployable
-    // The real payload is appended after these bytes and stored as part of the contract's code
-    // Can be any valid runtime code, as long as it's deployable and its length is known
-    bytes internal constant MINIMAL_RUNTIME = hex"6000f3";
-
     function putRawFromCalldata(bytes calldata data) internal returns (address) {
-        // Construct runtime code: minimal executable + appended data payload
-        bytes memory runtimeCode = bytes.concat(MINIMAL_RUNTIME, data);
+        // Runtime code is the raw data itself
+        bytes memory runtimeCode = data;
 
-        // Wrap the runtime into a deployable constructor using StorageSlotFactoryFromInput
+        // Constructor: deploy contract that sets `runtimeCode` as its code
         bytes memory deployCode =
             abi.encodePacked(type(StorageSlotFactoryFromInput).creationCode, abi.encode(runtimeCode));
 
-        // Deploy via CREATE and return the contract address
         address deployed;
         assembly {
             deployed := create(0, add(deployCode, 0x20), mload(deployCode))
@@ -32,24 +24,20 @@ library StorageHelper {
     function sizeRaw(address addr) internal view returns (uint256, bool) {
         if (addr == address(0)) return (0, false);
         uint256 codeSize;
-        uint256 off = MINIMAL_RUNTIME.length;
         assembly {
             codeSize := extcodesize(addr)
         }
-        if (codeSize < off) return (0, false);
-        return (codeSize - off, true);
+        return (codeSize, codeSize > 0);
     }
 
     function getRaw(address addr) internal view returns (bytes memory, bool) {
         (uint256 dataSize, bool found) = sizeRaw(addr);
         if (!found) return (new bytes(0), false);
 
-        // copy the data without the "code"
         bytes memory data = new bytes(dataSize);
-        uint256 off = MINIMAL_RUNTIME.length;
         assembly {
             // retrieve data size
-            extcodecopy(addr, add(data, 0x20), off, dataSize)
+            extcodecopy(addr, add(data, 0x20), 0, dataSize)
         }
         return (data, true);
     }
@@ -58,10 +46,8 @@ library StorageHelper {
         (uint256 dataSize, bool found) = sizeRaw(addr);
         if (!found) return (0, false);
 
-        uint256 off = MINIMAL_RUNTIME.length;
         assembly {
-            // retrieve data size
-            extcodecopy(addr, memoryPtr, off, dataSize)
+            extcodecopy(addr, memoryPtr, 0, dataSize)
         }
         return (dataSize, true);
     }
