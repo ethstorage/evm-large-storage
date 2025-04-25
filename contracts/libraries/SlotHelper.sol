@@ -76,11 +76,11 @@ library SlotHelper {
         }
     }
 
-    function getRawAt(
-        mapping(uint256 => bytes32) storage slots,
-        bytes32 mdata,
-        uint256 memoryPtr
-    ) internal view returns (uint256 datalen, bool found) {
+    function getRawAt(mapping(uint256 => bytes32) storage slots, bytes32 mdata, uint256 memoryPtr)
+        internal
+        view
+        returns (uint256 datalen, bool found)
+    {
         bytes32 datapart;
         (datalen, datapart) = decodeMetadata(mdata);
 

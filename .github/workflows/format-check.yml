@@ -1,0 +1,21 @@
+name: Format Check
+
+on:
+  pull_request:
+    paths:
+      - '**/*.sol'
+
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Run forge fmt --check
+        run: forge fmt --check
