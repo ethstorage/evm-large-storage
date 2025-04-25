@@ -14,8 +14,8 @@ contract EthStorageContractTest is LargeStorageManager(0) {
     }
 
     // write real data
-    function writeBlobChunk(bytes32 key, uint256 chunkId, bytes calldata data) public payable virtual {
-        return _putChunkFromCalldata(key, chunkId, data, msg.value);
+    function writeBlobChunk(bytes32 key, uint256 chunkId, bytes calldata data) public virtual {
+        return _putChunkFromCalldata(key, chunkId, data);
     }
 
     function remove(bytes32 key) external {
