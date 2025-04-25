@@ -5,20 +5,22 @@ import "./Memory.sol";
 import "./StorageSlotFactory.sol";
 
 library StorageHelper {
-    // Minimal runtime that returns everything after the first 11 bytes (0x0b) of code
-    // Opcode explanation: PUSH1 0x0b CODECOPY RETURNDATASIZE RETURN
-    // Full sequence: 0x60 0x0b 0x59 0x81 0x38 0x03 0x80 0x92 0x59 0x39 0xf3
-    bytes internal constant MINIMAL_RUNTIME = hex"600b5981380380925939f3";
+    // Minimal valid runtime: just returns empty data when called (PUSH1 0x00, RETURN)
+    // Full opcodes: 0x60 0x00 0xf3
+    // This runtime is never actually executed — it just makes the contract deployable
+    // The real payload is appended after these bytes and stored as part of the contract's code
+    // Can be any valid runtime code, as long as it's deployable and its length is known
+    bytes internal constant MINIMAL_RUNTIME = hex"6000f3";
 
     function putRawFromCalldata(bytes calldata data) internal returns (address) {
-        // Append the runtime code with data (data will be part of the deployed code)
+        // Construct runtime code: minimal executable + appended data payload
         bytes memory runtimeCode = bytes.concat(MINIMAL_RUNTIME, data);
 
-        // Encode the creation code of StorageSlotFactoryFromInput with the runtimeCode as constructor input
+        // Wrap the runtime into a deployable constructor using StorageSlotFactoryFromInput
         bytes memory deployCode =
             abi.encodePacked(type(StorageSlotFactoryFromInput).creationCode, abi.encode(runtimeCode));
 
-        // Deploy the contract using CREATE and return the deployed address
+        // Deploy via CREATE and return the contract address
         address deployed;
         assembly {
             deployed := create(0, add(deployCode, 0x20), mload(deployCode))
