@@ -6,19 +6,8 @@ import "./StorageSlotFactory.sol";
 
 library StorageHelper {
     function putRawFromCalldata(bytes calldata data) internal returns (address) {
-        // Runtime code is the raw data itself
-        bytes memory runtimeCode = data;
-
-        // Constructor: deploy contract that sets `runtimeCode` as its code
-        bytes memory deployCode =
-            abi.encodePacked(type(StorageSlotFactoryFromInput).creationCode, abi.encode(runtimeCode));
-
-        address deployed;
-        assembly {
-            deployed := create(0, add(deployCode, 0x20), mload(deployCode))
-        }
-        require(deployed != address(0), "deploy failed");
-        return deployed;
+        StorageSlotFactoryFromInput c = new StorageSlotFactoryFromInput(data);
+        return address(c);
     }
 
     function sizeRaw(address addr) internal view returns (uint256, bool) {
