@@ -158,10 +158,6 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return 0;
     }
 
-    function destruct() public override onlyOwner {
-        selfdestruct(payable(owner()));
-    }
-
     function getChunkHash(bytes memory name, uint256 chunkId) public view override returns (bytes32) {
         (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
