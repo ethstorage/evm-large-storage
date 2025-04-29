@@ -26,8 +26,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     }
 
     // Large storage methods
-    function write(bytes memory name, bytes calldata data) public payable virtual override onlyOwner {
-        // TODO: support multiple chunks
+    function write(bytes memory name, bytes calldata data) public virtual override onlyOwner {
         return writeChunk(name, 0, data);
     }
 
@@ -74,19 +73,12 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
 
     /// @notice This function is deprecated and will be removed in future versions.
     /// @dev Use `writeChunkByCalldata` instead.
-    function writeChunk(bytes memory name, uint256 chunkId, bytes calldata data)
-        public
-        payable
-        virtual
-        override
-        onlyOwner
-    {
+    function writeChunk(bytes memory name, uint256 chunkId, bytes calldata data) public virtual override onlyOwner {
         writeChunkByCalldata(name, chunkId, data);
     }
 
     function writeChunkByCalldata(bytes memory name, uint256 chunkId, bytes calldata data)
         public
-        payable
         virtual
         override
         onlyOwner
@@ -96,7 +88,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         if (mode == StorageMode.Uninitialized) {
             storageModes[key] = StorageMode.OnChain;
         }
-        _putChunkFromCalldata(key, chunkId, data, msg.value);
+        _putChunkFromCalldata(key, chunkId, data);
     }
 
     /// @notice This function is deprecated and will be removed in future versions.
@@ -164,14 +156,6 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
             return _remove(key, chunkId);
         }
         return 0;
-    }
-
-    function refund() public override onlyOwner {
-        payable(owner()).transfer(address(this).balance);
-    }
-
-    function destruct() public override onlyOwner {
-        selfdestruct(payable(owner()));
     }
 
     function getChunkHash(bytes memory name, uint256 chunkId) public view override returns (bytes32) {

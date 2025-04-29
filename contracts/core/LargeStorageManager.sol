@@ -3,7 +3,6 @@ pragma solidity ^0.8.20;
 
 import "../libraries/SlotHelper.sol";
 import "../libraries/StorageHelper.sol";
-import "../libraries/StorageSlotSelfDestructable.sol";
 
 // Large storage manager to support arbitrarily-sized data with multiple chunk
 contract LargeStorageManager {
@@ -35,22 +34,14 @@ contract LargeStorageManager {
             keyToTotalSize[key] -= oldSize;
         }
         keyToTotalSize[key] += newSize;
-
-        if (!metadata.isInSlot()) {
-            address addr = metadata.bytes32ToAddr();
-            if (addr != address(0x0)) {
-                // remove the KV first if it exists
-                StorageSlotSelfDestructable(addr).destruct();
-            }
-        }
     }
 
-    function _putChunkFromCalldata(bytes32 key, uint256 chunkId, bytes calldata data, uint256 value) internal {
+    function _putChunkFromCalldata(bytes32 key, uint256 chunkId, bytes calldata data) internal {
         _preparePut(key, chunkId, data.length);
 
         // store data and rewrite metadata
         if (data.length > SLOT_LIMIT) {
-            keyToMetadata[key][chunkId] = StorageHelper.putRawFromCalldata(data, value).addrToBytes32();
+            keyToMetadata[key][chunkId] = StorageHelper.putRawFromCalldata(data).addrToBytes32();
         } else {
             keyToMetadata[key][chunkId] = SlotHelper.putRaw(keyToSlots[key][chunkId], data);
         }
@@ -120,15 +111,7 @@ contract LargeStorageManager {
     // Returns # of chunks deleted
     function _remove(bytes32 key, uint256 chunkId) internal returns (uint256) {
         while (keyToMetadata[key][chunkId] != bytes32(0)) {
-            bytes32 metadata = keyToMetadata[key][chunkId];
-
             (uint256 oldSize,) = _chunkSize(key, chunkId);
-            if (!metadata.isInSlot()) {
-                address addr = metadata.bytes32ToAddr();
-                // remove new contract
-                StorageSlotSelfDestructable(addr).destruct();
-            }
-
             keyToMetadata[key][chunkId] = bytes32(0x0);
             keyToChunkNum[key]--;
             keyToTotalSize[key] -= oldSize;
@@ -144,13 +127,6 @@ contract LargeStorageManager {
             return false;
         }
         (uint256 oldSize,) = _chunkSize(key, chunkId);
-        bytes32 metadata = keyToMetadata[key][chunkId];
-        if (!metadata.isInSlot()) {
-            address addr = metadata.bytes32ToAddr();
-            // remove new contract
-            StorageSlotSelfDestructable(addr).destruct();
-        }
-
         keyToMetadata[key][chunkId] = bytes32(0x0);
         keyToChunkNum[key]--;
         keyToTotalSize[key] -= oldSize;

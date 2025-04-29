@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 // Create a storage slot
 contract StorageSlotFactoryFromInput {
-    constructor(bytes memory codeAndData) payable {
+    constructor(bytes memory codeAndData) {
         uint256 size = codeAndData.length;
         // Return the contract manually
         assembly {
