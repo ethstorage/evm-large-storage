@@ -5,6 +5,9 @@ on:
     paths:
       - '**/*.sol'
 
+permissions:
+  contents: read
+
 jobs:
   check-format:
     runs-on: ubuntu-latest
