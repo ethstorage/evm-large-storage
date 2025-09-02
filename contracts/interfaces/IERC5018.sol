@@ -25,16 +25,8 @@ interface IERC5018 {
 
     function countChunks(bytes memory name) external view returns (uint256);
 
-    /// @notice This function is deprecated and will be removed in future versions.
-    /// @dev Use `writeChunkByCalldata` instead.
-    function writeChunk(bytes memory name, uint256 chunkId, bytes memory data) external;
-
     // Chunk-based large storage methods
     function writeChunkByCalldata(bytes memory name, uint256 chunkId, bytes memory data) external;
-
-    /// @notice This function is deprecated and will be removed in future versions.
-    /// @dev Use `writeChunksByBlobs` instead.
-    function writeChunks(bytes memory name, uint256[] memory chunkIds, uint256[] memory sizes) external payable;
 
     function writeChunksByBlobs(bytes memory name, uint256[] memory chunkIds, uint256[] memory sizes)
         external
