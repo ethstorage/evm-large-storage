@@ -16,9 +16,9 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
     {}
 
     /// @notice Semantic version.
-    /// @custom:semver 1.0.0
+    /// @custom:semver 1.1.0
     function version() public pure virtual returns (string memory) {
-        return "1.0.0";
+        return "1.1.0";
     }
 
     function getStorageMode(bytes memory name) public view returns (StorageMode) {
@@ -27,7 +27,7 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
 
     // Large storage methods
     function write(bytes memory name, bytes calldata data) public virtual override onlyOwner {
-        return writeChunk(name, 0, data);
+        return writeChunkByCalldata(name, 0, data);
     }
 
     function read(bytes memory name) public view virtual override returns (bytes memory, bool) {
@@ -71,12 +71,6 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return 0;
     }
 
-    /// @notice This function is deprecated and will be removed in future versions.
-    /// @dev Use `writeChunkByCalldata` instead.
-    function writeChunk(bytes memory name, uint256 chunkId, bytes calldata data) public virtual override onlyOwner {
-        writeChunkByCalldata(name, chunkId, data);
-    }
-
     function writeChunkByCalldata(bytes memory name, uint256 chunkId, bytes calldata data)
         public
         virtual
@@ -89,17 +83,6 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
             storageModes[key] = StorageMode.OnChain;
         }
         _putChunkFromCalldata(key, chunkId, data);
-    }
-
-    /// @notice This function is deprecated and will be removed in future versions.
-    /// @dev Use `writeChunksByBlobs` instead.
-    function writeChunks(bytes memory name, uint256[] memory chunkIds, uint256[] memory sizes)
-        public
-        payable
-        override
-        onlyOwner
-    {
-        writeChunksByBlobs(name, chunkIds, sizes);
     }
 
     function writeChunksByBlobs(bytes memory name, uint256[] memory chunkIds, uint256[] memory sizes)
