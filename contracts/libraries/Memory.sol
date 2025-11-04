@@ -27,12 +27,11 @@ library Memory {
         require(bts.length >= len);
         uint256 addr2;
         assembly {
-            addr2 :=
-                add(
-                    bts,
-                    /*BYTES_HEADER_SIZE*/
-                    32
-                )
+            addr2 := add(
+                bts,
+                /*BYTES_HEADER_SIZE*/
+                32
+            )
         }
         return equals(addr, addr2, len);
     }
@@ -43,11 +42,10 @@ library Memory {
     function allocate(uint256 numBytes) internal pure returns (uint256 addr) {
         // Take the current value of the free memory pointer, and update.
         assembly {
-            addr :=
-                mload(
-                    /*FREE_MEM_PTR*/
-                    0x40
-                )
+            addr := mload(
+                /*FREE_MEM_PTR*/
+                0x40
+            )
             mstore(
                 /*FREE_MEM_PTR*/
                 0x40,
@@ -111,12 +109,11 @@ library Memory {
     // Returns a memory pointer to the data portion of the provided bytes array.
     function dataPtr(bytes memory bts) internal pure returns (uint256 addr) {
         assembly {
-            addr :=
-                add(
-                    bts,
-                    /*BYTES_HEADER_SIZE*/
-                    32
-                )
+            addr := add(
+                bts,
+                /*BYTES_HEADER_SIZE*/
+                32
+            )
         }
     }
 
@@ -125,12 +122,11 @@ library Memory {
     function fromBytes(bytes memory bts) internal pure returns (uint256 addr, uint256 len) {
         len = bts.length;
         assembly {
-            addr :=
-                add(
-                    bts,
-                    /*BYTES_HEADER_SIZE*/
-                    32
-                )
+            addr := add(
+                bts,
+                /*BYTES_HEADER_SIZE*/
+                32
+            )
         }
     }
 
@@ -141,12 +137,11 @@ library Memory {
         bts = new bytes(len);
         uint256 btsptr;
         assembly {
-            btsptr :=
-                add(
-                    bts,
-                    /*BYTES_HEADER_SIZE*/
-                    32
-                )
+            btsptr := add(
+                bts,
+                /*BYTES_HEADER_SIZE*/
+                32
+            )
         }
         copy(addr, btsptr, len);
     }
