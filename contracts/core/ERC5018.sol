@@ -111,6 +111,28 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return (new bytes(0), false);
     }
 
+    function readChunksPaged(bytes memory name, uint256 startChunkId, uint256 limit) external view returns (bytes[] memory chunks) {
+        uint256 totalChunks = countChunks(name);
+        uint256 end = startChunkId + limit;
+        if (end > totalChunks) {
+            end = totalChunks;
+        }
+        uint256 count = end > startChunkId ? end - startChunkId : 0;
+
+        (bytes32 key, StorageMode mode) = _getModeAndKey(name);
+        chunks = new bytes[](count);
+        for (uint256 i = 0; i < count; i++) {
+            uint256 chunkId = startChunkId + i;
+            if (mode == StorageMode.Blob) {
+                (chunks[i],) = _getChunkFromBlob(key, chunkId);
+            } else if (mode == StorageMode.OnChain) {
+                (chunks[i],) = _getChunk(key, chunkId);
+            } else {
+                chunks[i] = new bytes(0);
+            }
+        }
+    }
+
     function chunkSize(bytes memory name, uint256 chunkId) public view virtual override returns (uint256, bool) {
         (bytes32 key, StorageMode mode) = _getModeAndKey(name);
         if (mode == StorageMode.Blob) {
