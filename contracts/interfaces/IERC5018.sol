@@ -32,7 +32,10 @@ interface IERC5018 {
 
     function readChunk(bytes memory name, uint256 chunkId) external view returns (bytes memory, bool);
 
-    function readChunksPaged(bytes memory name, uint256 startChunkId, uint256 limit) external view returns (bytes[] memory chunks);
+    function readChunksPaged(bytes memory name, uint256 startChunkId, uint256 limit)
+        external
+        view
+        returns (bytes[] memory chunks);
 
     function chunkSize(bytes memory name, uint256 chunkId) external view returns (uint256, bool);
 

@@ -111,7 +111,11 @@ contract ERC5018 is LargeStorageManager, BlobStorageManager, IERC5018, ISemver {
         return (new bytes(0), false);
     }
 
-    function readChunksPaged(bytes memory name, uint256 startChunkId, uint256 limit) external view returns (bytes[] memory chunks) {
+    function readChunksPaged(bytes memory name, uint256 startChunkId, uint256 limit)
+        external
+        view
+        returns (bytes[] memory chunks)
+    {
         uint256 totalChunks = countChunks(name);
         uint256 end = startChunkId + limit;
         if (end > totalChunks) {
