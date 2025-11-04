@@ -5,4 +5,4 @@ forge build
 
 forge script scripts/Deploy.s.sol:Deploy \
   --broadcast \
-  --rpc-url https://rpc.beta.testnet.l2.quarkchain.io:8545
+  --rpc-url http://65.108.230.142:8545/
