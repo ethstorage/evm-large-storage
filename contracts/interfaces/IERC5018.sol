@@ -28,9 +28,7 @@ interface IERC5018 {
     // Chunk-based large storage methods
     function writeChunkByCalldata(bytes memory name, uint256 chunkId, bytes memory data) external;
 
-    function writeChunksByBlobs(bytes memory name, uint256[] memory chunkIds, uint256[] memory sizes)
-        external
-        payable;
+    function writeChunksByBlobs(bytes memory name, uint256[] memory chunkIds, uint256[] memory sizes) external payable;
 
     function readChunk(bytes memory name, uint256 chunkId) external view returns (bytes memory, bool);
 

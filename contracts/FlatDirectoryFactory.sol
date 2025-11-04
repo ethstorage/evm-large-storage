@@ -7,22 +7,29 @@ import "./FlatDirectory.sol";
 contract FlatDirectoryFactory {
     event FlatDirectoryCreated(address);
 
-    function create(address _ethStorage) public returns (address) {
+    address public ethStorage;
+
+    constructor(address _ethStorage) {
+        ethStorage = _ethStorage;
+    }
+
+    function create() public returns (address) {
         uint32 dataSize = (4 * 31 + 3) * 1024 - 4;
-        return _create(0, dataSize, _ethStorage);
+        return _create(0, dataSize);
     }
 
-    function createWithSize(uint32 _size, address _ethStorage) public returns (address) {
-        return _create(0, _size, _ethStorage);
+    function createWithSize(uint32 _size) public returns (address) {
+        return _create(0, _size);
     }
 
-    function createWithOptimized(uint32 _size, address _ethStorage) public returns (address) {
-        return _create(220, _size, _ethStorage);
+    function createWithOptimized(uint32 _size) public returns (address) {
+        return _create(220, _size);
     }
 
-    function _create(uint8 _slotLimit, uint32 _size, address _ethStorage) private returns (address) {
-        FlatDirectory fd = new FlatDirectory(_slotLimit, _size, _ethStorage);
+    function _create(uint8 _slotLimit, uint32 _size) private returns (address) {
+        FlatDirectory fd = new FlatDirectory(_slotLimit, _size, ethStorage);
         emit FlatDirectoryCreated(address(fd));
+        fd.transferOwnership(msg.sender);
         return address(fd);
     }
 }
